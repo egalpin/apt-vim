@@ -1,0 +1,20 @@
+{
+    "global": {
+        "depends-on": [
+            {
+                "name": "git"
+            },
+            {
+                "name": "python"
+            }
+        ],
+        "install-target": "./test_clone"
+    },
+    "packages": [
+        {
+            "depends-on": [],
+            "pkg-url": "https://github.com/egalpin/apt-vim.git",
+            "post-install": []
+        }
+    ]
+}

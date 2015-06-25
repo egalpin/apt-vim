@@ -1,93 +1,214 @@
 #!/usr/bin/env python
 import json, sys, os, re
+from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
-REQUIREMENTS = ['git']
+SCRIPT_ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 
-def vimpkg_to_dict():
-    json_file = open('vimpkg.json').read()
-    return json.loads(json_file);
+class VimPackage:
+    def __init__(self, pkg_url='', depends_on=[], post_install=[]):
+        self.pkg_url = pkg_url
+        self.depends_on = depends_on
+        self.post_install = post_install
 
-def run_post_install(gitUrl, vimpkg):
-    commands = vimpkg[gitUrl]['post-install']
+    def to_json(self):
+        res = json.dumps(self, default=lambda o: o.__dict__)
+        # Convert python variable names to json variable names
+        return res.replace('_', '-')
+
+    def to_dict(self):
+        # Convert python variable names to json variable names
+        return {k.replace('_', '-'): v for k,v in self.__dict__.items()}
+
+
+def load_vim_config(file_path='~/.vimpkg/vim_config.json'):
+    json_file = open(file_path).read()
+    return json.loads(json_file)
+
+def get_global_requirements(vim_config):
+    return [ req['name'] for req in vim_config['global']['depends-on'] ]
+
+def run_post_install(git_url, commands=[]):
     for command in commands:
         try:
             call(command)
-        except :
-            print 'Failed to complete post-install for `' + gitUrl + '`'
-            print 'Command `' + str(' '.join(command)) + '` failed'
+        except:
+            report_fail(
+                    'Failed to complete post-install for `' + git_url + '`' +
+                    '\nCommand `' + str(' '.join(command)) + '` failed.'
+                    )
+def status_update(pkg_name):
+    print '\nCloning, installing and configuring `' + pkg_name + '`'
 
-def install_pkg(gitUrl, vimpkg):
-    #TODO: add gitUrl and post-install to vimpkg.json
-    initialDir = os.path.dirname(os.path.realpath(__file__))
+def install_pkg(git_url, vim_config):
+    #TODO: add git_url and post-install to vim_config.json
+    global SCRIPT_ROOT_DIR
+    vimpkg = VimPackage(pkg_url=git_url)
 
-    if gitUrl in vimpkg['packages']:
-        confirm_install(gitUrl)
-        get_post_install(gitUrl, vimpkg)
-    elif gitUrl not in vimpkg['packages']:
-        get_post_install(gitUrl, vimpkg)
+    if git_url in [p['pkg-url'] for p in vim_config['packages']]:
+        confirm_install(git_url, vim_config)
+    commands = get_post_install_commands(git_url, vim_config)
+    vimpkg.post_install = commands
 
-    if vimpkg['config']['install-target']:
-        targetDir = vimpkg['config']['install-target']
+    if 'install-target' in vim_config['global']:
+        target_dir = vim_config['global']['install-target']
     else:
-        targetDir = '~/.vim/bundle'
+        target_dir = '~/.vim/bundle'
+
+    status_update(get_pkg_name_from_url(git_url))
+    # Change to directory with vim plugins
+    os.chdir(target_dir)
     try:
-        call(['cd', targetDir])
-        _install_pkg(gitUrl, vimpkg)
-    except CalledProcessError:
-        print 'Failed to change to directory `' + targetDir + '`'
-    call(['cd', initialDir])
-    save_vimpkg(vimpkg)
+        # Clone the plugin and run any post-install commands
+        __install_pkg(git_url, vim_config, commands)
+    except:
+        report_fail('Failed to install `' + git_url + '`')
+    #add_pkg_to_vim_config(vimpkg, vim_config)
+    # Change back to the DIR containing this script
+    os.chdir(SCRIPT_ROOT_DIR)
+    return vimpkg
 
-def _install_pkg(gitUrl, vimpkg):
-    pkgName = get_pkg_name_from_url(gitUrl)
-
+def clone_pkg(git_url):
+    pkg_name = get_pkg_name_from_url(git_url)
     try:
-        call(['git', 'clone', gitUrl])
-        call(['cd', pkgName])
-        run_post_install(gitUrl, vimpkg)
-    except CalledProcessError:
-        print 'Failed to intall ' + pkgName
+        call(['git', 'clone', git_url])
+    except:
+        report_fail('Failed to clone `' + pkg_name + '`')
 
-def confirm_install(gitUrl, vimpkg):
+def __install_pkg(git_url, vim_config, commands=[]):
+    pkg_name = get_pkg_name_from_url(git_url)
+
+    clone_pkg(git_url)
+    try:
+        call(['cd', pkg_name])
+        run_post_install(git_url, commands)
+    except:
+        report_fail('Failed to intall ' + pkg_name)
+
+def user_confirm(msg=None):
+    if msg is None:
+        msg = 'Do you wish to continue anyways? [y|N]:  '
+    #sys.stdout.write(msg)
+    num_tries = 0
+    while num_tries < 3:
+        try:
+            user_choice = raw_input(msg).strip().lower()
+            if strtobool(user_choice):
+                return True
+            return False
+        except:  # Invalid option, retry
+            print 'Invalid option. Please enter `Y` or `N` only'
+            num_tries += 1
+    return False
+
+def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
+    if fail_msg is None:
+        fail_msg = 'Something went wrong...\n'
+    print fail_msg
+    if confirm_continue:
+        if user_confirm(confirm_msg):
+            return True
+    sys.exit(1)
+
+def confirm_install(git_url, vim_config):
     #TODO: Prompt user to confirm whether they want to overwrite the version
     #      already installed or skip installation
+    if report_fail('Package `' + git_url + '` already exists. Do you wish to overwrite?'):
+        #TODO: , delete cloned package dir, delete bin and src dirs
+        # Delete package from json
+        vim_config['packages'] = [ p for p in vim_config['packages'] if
+                p['pkg-url'] != git_url ]
+        os.chdir(vim_config['global']['install-target'])
+        os.rmdir(get_pkg_name_from_url(git_url))
+        return True
+    return False
+
+
+def remove_pkg(git_url, vim_config):
     pass
 
-def delete_pkg(gitUrl, vimpkg):
-    pass
+def get_post_install_commands(git_url, vim_config):
+    commands = []
+    if user_confirm('Any commands to run after cloning the plugin? [y|N]:  '):
+        print '\nEnter commands one line at a time. Terminate commands with an empty line.'
+        i = 1
+        command = raw_input('Command ' + str(i) + ': ')
+        while command != "":
+            i += 1
+            command = map(lambda x: x.replace('"', '').replace("'", ""), command.split(' '))
+            commands.append(command)
+            command = raw_input('Command ' + str(i) + ': ')
+    return commands
 
-def get_post_install(gitUrl, vimpkg):
-    #TODO: Prompt user to input post-install commands, 1 command per line
-    #      Command list is terminated by an empty line
-    #TODO: Split commands by whitespace and push to
-    #      vimpkg['packages'][gitUrlIndex]['post-install']
-    pass
+#def add_pkg_to_vim_config(vimpkg, vim_config):
+    #vim_config['packages'].append(vimpkg.to_json())
 
-def add_package(gitUrl, vimpkg):
-    vimpkg['packages'].push({'package-url': gitUrl})
-    pass
+def save_vim_config(vim_config, vimpkg, file_path=None):
+    if file_path is None:
+        file_path = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
+    try:
+        with open(file_path) as f:
+            data = json.load(f)
 
-def save_vimpkg(vimpkg):
-    pass
+        data['packages'].append(vimpkg.to_dict())
+        with open(file_path, 'w') as f:
+            json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
+    except:
+        print 'failed to write ' + file_path
+        sys.exit(1)
 
-def get_pkg_name_from_url(gitUrl):
-    pkgRegex = r'.*\/([^\/]+).git$'
-    match = re.match(pkgRegex, gitUrl)
+def get_pkg_name_from_url(git_url):
+    pkg_regex = re.compile(r'.*\/([^\/]+).git$')
+    match = pkg_regex.match(git_url)
     return match.group(1)
 
-def check_requirements(requirements=[]):
+def check_requirements(requirements=None):
+    if requirements is None:
+        return True
     for req in requirements:
         try:
             check_output(['which', req])
-        except CalledProcessError:
+        except:
             print 'Missing requirement: ' + req
             return False
     return True
 
+def validate_url(url):
+    regex = re.compile(
+            r'^(?:http|ftp)s?://' # http:// or https:// or ftp:// or ftps://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    match = regex.search(url)
+    return True if match else False
+
+def usage():
+    pass
+
+def process_cmd_args(git_url):
+    #TODO: use below to verify git_url if one is expected (i.e. for apt-vim install)
+    argv = sys.argv
+    argc = len(argv)
+    # Get git url (try last argument in argv)
+    git_url = argv[argc -1]
+    if validate_url(git_url):
+        #TODO: process command
+        pass
+    else:
+        #TODO: usage()
+        print 'No valid url provided'
+        sys.exit()
+
 def main():
-    check_requirements(REQUIREMENTS)
-    run_post_install(vimpkg_to_dict(), 'git-url/blah')
+    vim_config = load_vim_config('./vim_config.json')
+    #reqs = get_global_requirements(vim_config)
+    #if check_requirements(reqs):
+        ##TODO: process args
+        #pass
+    vimpkg = install_pkg('https://github.com/egalpin/apt-vim.git', vim_config)
+    save_vim_config(vim_config, vimpkg)
 
 
 if __name__ == '__main__':
