@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+import json, sys, os, re
+from subprocess import call, check_output, CalledProcessError
+
+REQUIREMENTS = ['git']
+
+def vimpkg_to_dict():
+    json_file = open('vimpkg.json').read()
+    return json.loads(json_file);
+
+def run_post_install(gitUrl, vimpkg):
+    commands = vimpkg[gitUrl]['post-install']
+    for command in commands:
+        try:
+            call(command)
+        except :
+            print 'Failed to complete post-install for `' + gitUrl + '`'
+            print 'Command `' + str(' '.join(command)) + '` failed'
+
+def install_pkg(gitUrl, vimpkg):
+    #TODO: add gitUrl and post-install to vimpkg.json
+    initialDir = os.path.dirname(os.path.realpath(__file__))
+
+    if gitUrl in vimpkg['packages']:
+        confirm_install(gitUrl)
+        get_post_install(gitUrl, vimpkg)
+    elif gitUrl not in vimpkg['packages']:
+        get_post_install(gitUrl, vimpkg)
+
+    if vimpkg['config']['install-target']:
+        targetDir = vimpkg['config']['install-target']
+    else:
+        targetDir = '~/.vim/bundle'
+    try:
+        call(['cd', targetDir])
+        _install_pkg(gitUrl, vimpkg)
+    except CalledProcessError:
+        print 'Failed to change to directory `' + targetDir + '`'
+    call(['cd', initialDir])
+    save_vimpkg(vimpkg)
+
+def _install_pkg(gitUrl, vimpkg):
+    pkgName = get_pkg_name_from_url(gitUrl)
+
+    try:
+        call(['git', 'clone', gitUrl])
+        call(['cd', pkgName])
+        run_post_install(gitUrl, vimpkg)
+    except CalledProcessError:
+        print 'Failed to intall ' + pkgName
+
+def confirm_install(gitUrl, vimpkg):
+    #TODO: Prompt user to confirm whether they want to overwrite the version
+    #      already installed or skip installation
+    pass
+
+def delete_pkg(gitUrl, vimpkg):
+    pass
+
+def get_post_install(gitUrl, vimpkg):
+    #TODO: Prompt user to input post-install commands, 1 command per line
+    #      Command list is terminated by an empty line
+    #TODO: Split commands by whitespace and push to
+    #      vimpkg['packages'][gitUrlIndex]['post-install']
+    pass
+
+def add_package(gitUrl, vimpkg):
+    vimpkg['packages'].push({'package-url': gitUrl})
+    pass
+
+def save_vimpkg(vimpkg):
+    pass
+
+def get_pkg_name_from_url(gitUrl):
+    pkgRegex = r'.*\/([^\/]+).git$'
+    match = re.match(pkgRegex, gitUrl)
+    return match.group(1)
+
+def check_requirements(requirements=[]):
+    for req in requirements:
+        try:
+            check_output(['which', req])
+        except CalledProcessError:
+            print 'Missing requirement: ' + req
+            return False
+    return True
+
+def main():
+    check_requirements(REQUIREMENTS)
+    run_post_install(vimpkg_to_dict(), 'git-url/blah')
+
+
+if __name__ == '__main__':
+    main()

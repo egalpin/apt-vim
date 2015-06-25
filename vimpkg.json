@@ -1,0 +1,14 @@
+{
+    "config": {
+        "install-target": "~/.vim/bundle"
+    },
+    "packages": [
+        {
+            "package-url": "git-url/blah",
+            "post-install": [
+                ["ls", "-la"],
+                ["pwd"],
+            ]
+        }
+    ]
+}
