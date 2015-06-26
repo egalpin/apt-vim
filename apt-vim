@@ -47,6 +47,7 @@ class VimPackage:
         d[DPND] = deps
         return d
 
+
 def load_vim_config(file_path='~/.vimpkg/vim_config.json'):
     json_file = open(file_path).read()
     return json.loads(json_file)
@@ -54,22 +55,11 @@ def load_vim_config(file_path='~/.vimpkg/vim_config.json'):
 def get_global_requirements(vim_config):
     return [ req[NAME] for req in vim_config[GBL][DPND] ]
 
-#def run_post_install(git_url, commands=[]):
-    #for command in commands:
-        #try:
-            #call(command)
-        #except:
-            #report_fail(
-                    #'Failed to complete post-install for `' + git_url + '`' +
-                    #'\nCommand `' + str(' '.join(command)) + '` failed.'
-                    #)
-
 def status_update(pkg_name):
     print '\nCloning, configuring, and installing `' + pkg_name + '`'
 
 def install_pkg(git_url, vim_config):
     #TODO: add git_url and post-install to vim_config.json
-    global SCRIPT_ROOT_DIR
     vimpkg = VimPackage(pkg_url=git_url)
     pkg_name = get_pkg_name_from_url(git_url)
     #if TRG_DIR in vim_config[GBL]:
@@ -115,7 +105,6 @@ def __install_pkg(pkg_name, git_url, install_target, commands=[]):
         report_fail('Failed to intall ' + pkg_name)
 
 def install_dependencies(pkg_name, dependencies=[]):
-    global SRC_DIR
     for dep in dependencies:
         # Change to directory with dependency source
         os.chdir(SRC_DIR)
@@ -235,7 +224,8 @@ def save_vim_config(vim_config, vimpkg, file_path=None):
         with open(file_path) as f:
             data = json.load(f)
 
-        data[PKGS].append(vimpkg.to_dict())
+        vim_config[PKGS].append(vimpkg.to_dict())
+        data[PKGS] = vim_config[PKGS]
         with open(file_path, 'w') as f:
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
     except:
@@ -252,7 +242,7 @@ def check_requirements(requirements=None):
         return True
     for req in requirements:
         try:
-            call(['which', req])
+            call(['which', req], stdout=open(os.devnull, 'wb'))
         except:
             print 'Missing requirement: ' + req
             return False
@@ -272,19 +262,6 @@ def validate_url(url):
 def usage():
     pass
 
-def process_cmd_args(git_url):
-    #TODO: use below to verify git_url if one is expected (i.e. for apt-vim install)
-    argv = sys.argv
-    argc = len(argv)
-    # Get git url (try last argument in argv)
-    git_url = argv[argc -1]
-    if validate_url(git_url):
-        #TODO: process command
-        pass
-    else:
-        usage()
-        sys.exit()
-
 def exe_shell_commands(commands=None):
     if commands is None:
         commands = []
@@ -300,12 +277,49 @@ def exe_shell_commands(commands=None):
 
 def init(vim_config):
     missing_deps = []
-    deps = vim_config[DPND]
+    deps = vim_config[GBL][DPND]
     for dep in deps:
         if not check_requirements([dep[NAME]]):
             if not exe_shell_commands(dep[recipe]):
                 missing_deps.append(dep[NAME])
     return missing_deps
+
+def __process_install(argv, vim_config):
+    if not argv:
+        # No options and no git URL passed
+        #TODO Interactively iterate and install each package in vim_config[PKGS]
+        pass
+    git_url = ''
+    # Try to get git url
+    for arg in argv:
+        git_url = arg
+        if validate_url(git_url):
+            # Strip the git url from the rest of the options
+            argv.remove(arg)
+        vimpkg = install_pkg(git_url, vim_config)
+        save_vim_config(vim_config, vimpkg)
+    else:
+        pass
+    pass
+
+def __process_remove(argv, vim_config):
+    pass
+
+def __process_update(argv, vim_config):
+    pass
+
+MODES = { 'install': __process_install, 'remove': __process_remove, \
+        'update': __process_update }
+
+def process_cmd_args(vim_config):
+    argv = sys.argv[1:]
+    argc = len(argv)
+    mode = argv[0].lower()
+    if mode not in MODES:
+        usage()
+        sys.exit()
+    else:
+        MODES[mode](argv[1:], vim_config)
 
 def usage():
     pass
@@ -318,8 +332,7 @@ def main():
                 + ' not be automatically insatlled:\n' \
                 + str(missing_dependencies)
 
-    vimpkg = install_pkg('https://github.com/majutsushi/tagbar.git', vim_config)
-    save_vim_config(vim_config, vimpkg)
+    process_cmd_args(vim_config)
 
 
 if __name__ == '__main__':
