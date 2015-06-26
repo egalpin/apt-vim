@@ -52,7 +52,7 @@ def load_vim_config(file_path='~/.vimpkg/vim_config.json'):
     return json.loads(json_file)
 
 def get_global_requirements(vim_config):
-    return [ req['name'] for req in vim_config[GBL][DPND] ]
+    return [ req[NAME] for req in vim_config[GBL][DPND] ]
 
 #def run_post_install(git_url, commands=[]):
     #for command in commands:
@@ -124,7 +124,6 @@ def install_dependencies(pkg_name, dependencies=[]):
         os.chdir(pkg_name)
 
         commands = dep.recipe
-        print 'About to run commands: ', str(commands)
         if not exe_shell_commands(commands):
             report_fail('Failed to intall ' + pkg_name)
 
@@ -253,7 +252,7 @@ def check_requirements(requirements=None):
         return True
     for req in requirements:
         try:
-            check_output(['which', req])
+            call(['which', req])
         except:
             print 'Missing requirement: ' + req
             return False
@@ -283,8 +282,7 @@ def process_cmd_args(git_url):
         #TODO: process command
         pass
     else:
-        #TODO: usage()
-        print 'No valid url provided'
+        usage()
         sys.exit()
 
 def exe_shell_commands(commands=None):
@@ -300,13 +298,27 @@ def exe_shell_commands(commands=None):
             return report_fail('Command `' + com + '` failed.')
     return True
 
+def init(vim_config):
+    missing_deps = []
+    deps = vim_config[DPND]
+    for dep in deps:
+        if not check_requirements([dep[NAME]]):
+            if not exe_shell_commands(dep[recipe]):
+                missing_deps.append(dep[NAME])
+    return missing_deps
+
+def usage():
+    pass
+
 def main():
     vim_config = load_vim_config('./vim_config.json')
-    #reqs = get_global_requirements(vim_config)
-    #if check_requirements(reqs):
-        ##TODO: process args
-        #pass
-    vimpkg = install_pkg('https://github.com/Shougo/unite.vim.git', vim_config)
+    missing_dependencies = init(vim_config)
+    if missing_dependencies:
+        print 'Cannot proceed. Missing the following dependencies that could' \
+                + ' not be automatically insatlled:\n' \
+                + str(missing_dependencies)
+
+    vimpkg = install_pkg('https://github.com/majutsushi/tagbar.git', vim_config)
     save_vim_config(vim_config, vimpkg)
 
 
