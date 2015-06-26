@@ -8,13 +8,87 @@
                 "name": "python"
             }
         ],
-        "install-target": "./test_clone"
+        "install-target": "test_clone/.vim/bundle"
     },
     "packages": [
         {
             "depends-on": [],
             "pkg-url": "https://github.com/egalpin/apt-vim.git",
-            "post-install": []
+            "recipe": []
+        },
+        {
+            "depends-on": [
+                {
+                    "name": "ctags",
+                    "recipe": [
+                        "curl 'http://iweb.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz' -o ctags-5.8.tar.gz",
+                        "tar xzf ctags-5.8.tar.gz",
+                        "cd ctags-5.8",
+                        "pwd",
+                        "ls -la"
+                    ]
+                }
+            ],
+            "pkg-url": "https://github.com/Shougo/unite.vim.git",
+            "recipe": []
+        },
+        {
+            "depends-on": [
+                {
+                    "name": "ctags",
+                    "recipe": [
+                        "curl 'http://iweb.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz' -o ctags-5.8.tar.gz",
+                        "tar xzf ctags-5.8.tar.gz",
+                        "cd ctags-5.8",
+                        "pwd",
+                        "ls -la"
+                    ]
+                }
+            ],
+            "pkg-url": "https://github.com/Shougo/unite.vim.git",
+            "recipe": [
+                "pwd",
+                "ls -la",
+                "ech",
+                "echo",
+                "echo"
+            ]
+        },
+        {
+            "depends-on": [
+                {
+                    "name": "ctags",
+                    "recipe": [
+                        "curl 'http://iweb.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz' -o ctags-5.8.tar.gz",
+                        "tar xzf ctags-5.8.tar.gz",
+                        "cd ctags-5.8",
+                        "pwd",
+                        "ls -la"
+                    ]
+                }
+            ],
+            "pkg-url": "https://github.com/Shougo/unite.vim.git",
+            "recipe": [
+                "pwd",
+                "ls",
+                "echo -e \"\\n\\n\\n\""
+            ]
+        },
+        {
+            "depends-on": [
+                {
+                    "name": "ctags",
+                    "recipe": [
+                        "curl 'http://iweb.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz' -o ctags-5.8.tar.gz",
+                        "tar xzf ctags-5.8.tar.gz",
+                        "cd ctags-5.8",
+                        "pwd",
+                        "ls -la"
+                    ]
+                }
+            ],
+            "pkg-url": "https://github.com/Shougo/unite.vim.git",
+            "recipe": []
         }
     ]
 }
