@@ -313,10 +313,25 @@ def __handle_install(argv, vim_config):
     git_url = get_url_from_cmd_line(argv)
     # Strip the git url from the rest of the options
     argv.remove(git_url)
+    pkg_name = get_pkg_name_from_url(git_url)
     #TODO process cmd options, then install
-    vimpkg = add_pkg(git_url, vim_config)
+    # Command line option for specifying pkg details VS installing from file
+
+    pkg = [ p for p in vim_config[PKGS] if p[NAME] == pkg_name ]
+    if pkg:
+        vimpkg = dict_to_vimpkg(pkg[0])
+    else:
+        vimpkg = add_pkg(git_url, vim_config)
+        save_vim_config(vim_config, vimpkg, VIM_CONFIG)
     install_pkg(vimpkg)
-    save_vim_config(vim_config, vimpkg, VIM_CONFIG)
+
+
+def dict_to_vimpkg(d):
+    deps = [ dict_to_dep(dep) for dep in d[DPND] ]
+    return VimPackage(d[PKG_URL], d[NAME], deps, d[RECIPE])
+
+def dict_to_dep(d):
+    return Dependency(d[NAME], d[RECIPE])
 
 def __handle_add(argv, vim_config):
     install_target = get_install_target()

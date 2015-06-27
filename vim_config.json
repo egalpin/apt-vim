@@ -8,6 +8,13 @@
             {
                 "name": "python",
                 "recipe": []
+            },
+            {
+                "name": "pathogen",
+                "recipe": [
+                    "mkdir -p ~/.vim/autoload ~/.vim/bundle",
+                    "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                ]
             }
         ],
         "install-target": "test_clone/.vim/bundle"
@@ -22,11 +29,11 @@
                         "tar xzf ctags-5.8.tar.gz",
                         "cd ctags-5.8",
                         "sudo ./configure",
-                        "sudo make",
-                        "sudo make install"
+                        "sudo make"
                     ]
                 }
             ],
+            "name": "tagbar",
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
             "recipe": []
         },
