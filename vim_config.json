@@ -29,6 +29,15 @@
             ],
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
             "recipe": []
+        },
+        {
+            "depends-on": [],
+            "name": "apt-vim",
+            "pkg-url": "https://github.com/egalpin/apt-vim.git",
+            "recipe": [
+                "ls -la",
+                "pwd"
+            ]
         }
     ]
 }

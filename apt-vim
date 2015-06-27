@@ -31,8 +31,9 @@ class Dependency:
 
 
 class VimPackage:
-    def __init__(self, pkg_url='', depends_on=[], recipe=[]):
+    def __init__(self, pkg_url='', name='', depends_on=[], recipe=[]):
         self.pkg_url = pkg_url
+        self.name = name
         self.depends_on = depends_on
         self.recipe = recipe
 
@@ -63,10 +64,21 @@ def get_global_requirements(vim_config):
 def status_update(pkg_name):
     print '\nCloning, configuring, and installing `' + pkg_name + '`'
 
-def install_pkg(git_url, vim_config):
+def install_pkg(vimpkg):
+    install_target = get_install_target()
+    # Install dependencies of package
+    install_dependencies(vimpkg.name, vimpkg.depends_on)
+    # Clone the plugin and run any post-install commands
+    __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, vimpkg.recipe)
+    # Change back to the DIR containing this script
+    os.chdir(SCRIPT_ROOT_DIR)
+    return vimpkg
+
+def add_pkg(git_url, vim_config):
     #TODO: add git_url and post-install to vim_config.json
     vimpkg = VimPackage(pkg_url=git_url)
     pkg_name = get_pkg_name_from_url(git_url)
+    vimpkg.name = pkg_name
     install_target = get_install_target()
 
     if os.path.exists(os.path.join(install_target, pkg_name)): # or \
@@ -86,13 +98,6 @@ def install_pkg(git_url, vim_config):
     msg = 'Any commands to run after cloning `' + pkg_name + '`?'
     post_install_recipe = get_recipe(msg)
     vimpkg.recipe = post_install_recipe
-
-    # Install dependencies of package
-    install_dependencies(pkg_name, depends)
-    # Clone the plugin and run any post-install commands
-    __install_pkg(pkg_name, git_url, install_target, post_install_recipe)
-    # Change back to the DIR containing this script
-    os.chdir(SCRIPT_ROOT_DIR)
     return vimpkg
 
 def clone_pkg(git_url):
@@ -309,7 +314,14 @@ def __handle_install(argv, vim_config):
     # Strip the git url from the rest of the options
     argv.remove(git_url)
     #TODO process cmd options, then install
-    vimpkg = install_pkg(git_url, vim_config)
+    vimpkg = add_pkg(git_url, vim_config)
+    install_pkg(vimpkg)
+    save_vim_config(vim_config, vimpkg, VIM_CONFIG)
+
+def __handle_add(argv, vim_config):
+    install_target = get_install_target()
+    git_url = get_url_from_cmd_line(argv)
+    vimpkg = add_pkg(git_url, vim_config)
     save_vim_config(vim_config, vimpkg, VIM_CONFIG)
 
 def __handle_remove(argv, vim_config):
@@ -340,7 +352,7 @@ def __handle_update(argv, vim_config):
     pass
 
 MODES = { 'install': __handle_install, 'remove': __handle_remove, \
-        'update': __handle_update }
+        'update': __handle_update, 'add': __handle_add }
 
 def process_cmd_args(vim_config):
     argv = sys.argv[1:]
