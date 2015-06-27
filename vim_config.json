@@ -12,8 +12,8 @@
             {
                 "name": "pathogen",
                 "recipe": [
-                    "mkdir -p ~/.vim/autoload ~/.vim/bundle",
-                    "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                    "mkdir -p ~/test_clone/.vim/autoload ~/test_clone/.vim/bundle",
+                    "curl -LSso ~/test_clone/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
                 ]
             }
         ],

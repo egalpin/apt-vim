@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json, sys, os, re, shutil, shlex
+import json, sys, os, re, shutil, shlex, getopt
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
@@ -14,6 +14,9 @@ PKG_URL = 'pkg-url'
 PKGS = 'packages'
 RECIPE = 'recipe'
 VIM_CONFIG = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
+
+####### CMD LINE FLAGS #######
+ASSUME_YES = False
 
 class Dependency:
     def __init__(self, name='dep', recipe=[]):
@@ -66,13 +69,13 @@ def status_update(pkg_name):
 
 def install_pkg(vimpkg):
     install_target = get_install_target()
-    # Install dependencies of package
-    install_dependencies(vimpkg.name, vimpkg.depends_on)
-    # Clone the plugin and run any post-install commands
-    __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, vimpkg.recipe)
-    # Change back to the DIR containing this script
-    os.chdir(SCRIPT_ROOT_DIR)
-    return vimpkg
+    if user_confirm('Install `' + vimpkg.name + '`?') or ASSUME_YES:
+        # Install dependencies of package
+        install_dependencies(vimpkg.name, vimpkg.depends_on)
+        # Clone the plugin and run any post-install commands
+        __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, vimpkg.recipe)
+        # Change back to the DIR containing this script
+        os.chdir(SCRIPT_ROOT_DIR)
 
 def add_pkg(git_url, vim_config):
     #TODO: add git_url and post-install to vim_config.json
@@ -88,7 +91,6 @@ def add_pkg(git_url, vim_config):
                 + '\n\t`apt-vim remove ' + pkg_name + '`' \
                 + '\n\t`apt-vim install ' + git_url + '`'
         sys.exit(0)
-        #confirm_install(pkg_name, install_target, git_url, vim_config)
 
     status_update(pkg_name)
     # Get dependencies of package
@@ -152,12 +154,12 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
             return True
     sys.exit(1)
 
-def confirm_install(pkg_name, install_target, git_url, vim_config):
-    if report_fail('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
-        # Delete plugin and its dependencies/src, delete package from json
-        vim_config[PKGS] = remove_pkg(pkg_name, git_url, install_target, vim_config)
-        return True
-    return False
+#def confirm_install(pkg_name, install_target, git_url, vim_config):
+    #if report_fail('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
+        ## Delete plugin and its dependencies/src, delete package from json
+        #vim_config[PKGS] = remove_pkg(pkg_name, git_url, install_target, vim_config)
+        #return True
+    #return False
 
 def remove_pkg(pkg_name, git_url, install_target, vim_config):
     remove_pkg_src(pkg_name)
@@ -308,7 +310,10 @@ def __handle_install(argv, vim_config):
     if not argv:
         # No options and no git URL passed
         #TODO Interactively iterate and install each package in vim_config[PKGS]
-        pass
+        for pkg in vim_config[PKGS]:
+            vimpkg = dict_to_vimpkg(pkg)
+            install_pkg(vimpkg)
+        return
     # Try to get git url
     git_url = get_url_from_cmd_line(argv)
     # Strip the git url from the rest of the options
