@@ -13,7 +13,7 @@ TRG_DIR = 'install-target'
 PKG_URL = 'pkg-url'
 PKGS = 'packages'
 RECIPE = 'recipe'
-VIM_CONFIG = os.path.join(SCRIPT_ROOT_DIR, '.vimpkg/vim_config.json')
+VIM_CONFIG = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
 
 class Dependency:
     def __init__(self, name='dep', recipe=[]):
@@ -69,9 +69,14 @@ def install_pkg(git_url, vim_config):
     pkg_name = get_pkg_name_from_url(git_url)
     install_target = get_install_target()
 
-    if os.path.exists(os.path.join(install_target, pkg_name)) or \
-            git_url in [p[PKG_URL] for p in vim_config[PKGS]]:
-        confirm_install(pkg_name, install_target, git_url, vim_config)
+    if os.path.exists(os.path.join(install_target, pkg_name)): # or \
+            #git_url in [p[PKG_URL] for p in vim_config[PKGS]]:
+        print 'Skipping installed package `' + pkg_name + '`'
+        print 'To re-install `' + pkg_name + '` run:' \
+                + '\n\t`apt-vim remove ' + pkg_name + '`' \
+                + '\n\t`apt-vim install ' + git_url + '`'
+        sys.exit(0)
+        #confirm_install(pkg_name, install_target, git_url, vim_config)
 
     status_update(pkg_name)
     # Get dependencies of package
@@ -170,8 +175,8 @@ def remove_pkg_src(pkg_name):
     dir = os.path.join(SRC_DIR, pkg_name)
     remove_dir(dir)
 
-def remove_pkg_ref(git_url, vim_config):
-    return [ p for p in vim_config[PKGS] if p[PKG_URL] != git_url ]
+def remove_pkg_ref(pkg_name, vim_config):
+    return [ p for p in vim_config[PKGS] if pkg_name not in p[PKG_URL] ]
 
 def remove_pkg_plugin(pkg_name, install_target):
     dir = os.path.join(install_target, pkg_name)
@@ -236,7 +241,9 @@ def save_vim_config(vim_config, vimpkg=None, file_path=None):
 def get_pkg_name_from_url(git_url):
     pkg_regex = re.compile(r'.*\/([^\/]+).git$')
     match = pkg_regex.match(git_url)
-    return match.group(1)
+    if match:
+        return match.group(1)
+    return None
 
 def check_requirements(requirements=None):
     if requirements is None:
@@ -292,7 +299,7 @@ def get_url_from_cmd_line(argv):
             git_url = arg
     return git_url
 
-def __process_install(argv, vim_config):
+def __handle_install(argv, vim_config):
     if not argv:
         # No options and no git URL passed
         #TODO Interactively iterate and install each package in vim_config[PKGS]
@@ -304,16 +311,21 @@ def __process_install(argv, vim_config):
     #TODO process cmd options, then install
     vimpkg = install_pkg(git_url, vim_config)
     save_vim_config(vim_config, vimpkg, VIM_CONFIG)
-    pass
 
-def __process_remove(argv, vim_config):
+def __handle_remove(argv, vim_config):
     install_target = get_install_target()
     git_url = get_url_from_cmd_line(argv)
-    if not git_url:
-        report_fail('No package URL specified. Exiting', confirm_continue=False)
-        sys.exit(1)
+    if git_url:
+        pkg_name = get_pkg_name_from_url(git_url)
+    else:
+        #TODO better checking for pkg_name location in args
+        git_url = ''
+        git_url = argv[len(argv)-1]
+        pkg_name = git_url
+        if not git_url:
+            report_fail('No package URL specified. Exiting', confirm_continue=False)
+            sys.exit(1)
     argv.remove(git_url)
-    pkg_name = get_pkg_name_from_url(git_url)
     #TODO process cmd options
 
     msg = 'Confirm remove package `' + pkg_name + '`'
@@ -324,11 +336,11 @@ def __process_remove(argv, vim_config):
     else:
         print 'Skipped removal of `' + pkg_name +'`'
 
-def __process_update(argv, vim_config):
+def __handle_update(argv, vim_config):
     pass
 
-MODES = { 'install': __process_install, 'remove': __process_remove, \
-        'update': __process_update }
+MODES = { 'install': __handle_install, 'remove': __handle_remove, \
+        'update': __handle_update }
 
 def process_cmd_args(vim_config):
     argv = sys.argv[1:]
