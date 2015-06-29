@@ -70,8 +70,7 @@ def load_vim_config(file_path=VIM_CONFIG_PATH):
 
 def get_install_target():
     path = os.path.join(SCRIPT_ROOT_DIR, VIM_CONFIG[GBL][TRG_DIR])
-    if not os.path.exists(path):
-        os.makedirs(path)
+    path = path.replace('~', os.path.expanduser('~'))
     return path
 
 def get_global_requirements():
@@ -333,6 +332,15 @@ def exe_shell_commands(commands=None):
     return True
 
 def init():
+    bundle_path = os.path.join(os.path.expanduser("~"), '.vim/bundle')
+    if os.path.exists(bundle_path):
+        dest_path = bundle_path + '.bak'
+        shutil.move(bundle_path, dest_path)
+    install_target = get_install_target()
+    if not os.path.exists(install_target):
+        os.makedirs(install_target)
+    os.symlink(install_target, bundle_path)
+
     if not os.path.exists(BIN_DIR):
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
