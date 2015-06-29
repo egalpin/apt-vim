@@ -5,7 +5,7 @@ from subprocess import call, check_output, CalledProcessError
 
 SCRIPT_ROOT_DIR = os.path.join(os.path.expanduser("~"), '.vimpkg')
 SRC_DIR = os.path.join(SCRIPT_ROOT_DIR, 'src')
-BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
+#BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
 GBL = 'global'
 DPND = 'depends-on'
 NAME = 'name'
@@ -151,9 +151,9 @@ def __install_pkg(pkg_name, git_url, install_target, commands=[]):
 def install_dependencies(pkg_name, dependencies=[]):
     if dependencies:
         # Change to directory with dependency source
-        os.chdir(BIN_DIR)
-        if not os.path.exists(pkg_name):
-            os.makedirs(pkg_name)
+        #os.chdir(BIN_DIR)
+        #if not os.path.exists(pkg_name):
+            #os.makedirs(pkg_name)
         os.chdir(SRC_DIR)
         if not os.path.exists(pkg_name):
             os.makedirs(pkg_name)
@@ -209,9 +209,9 @@ def remove_dir(dir):
     if os.path.exists(dir):
         shutil.rmtree(dir)
 
-def remove_pkg_bin(pkg_name):
-    dir = os.path.join(BIN_DIR, pkg_name)
-    remove_dir(dir)
+#def remove_pkg_bin(pkg_name):
+    #dir = os.path.join(BIN_DIR, pkg_name)
+    #remove_dir(dir)
 
 def remove_pkg_src(pkg_name):
     dir = os.path.join(SRC_DIR, pkg_name)
@@ -348,8 +348,8 @@ def init():
     os.symlink(install_target, bundle_path)
 
 
-    if not os.path.exists(BIN_DIR):
-        os.makedirs(BIN_DIR)
+    #if not os.path.exists(BIN_DIR):
+        #os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
 

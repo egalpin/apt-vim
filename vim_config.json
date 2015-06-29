@@ -32,7 +32,7 @@
                         "cd ctags-5.8",
                         "sudo ./configure",
                         "sudo make",
-                        "cp ctags ../../../bin/tagbar/ctags"
+                        "sudo make install"
                     ]
                 }
             ],
