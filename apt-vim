@@ -69,7 +69,8 @@ def load_vim_config(file_path=VIM_CONFIG_PATH):
     VIM_CONFIG = json.loads(json_file)
 
 def get_install_target():
-    path = os.path.join(SCRIPT_ROOT_DIR, VIM_CONFIG[GBL][TRG_DIR])
+    #path = os.path.join(SCRIPT_ROOT_DIR, VIM_CONFIG[GBL][TRG_DIR])
+    path = VIM_CONFIG[GBL][TRG_DIR]
     path = path.replace('~', os.path.expanduser('~'))
     return path
 
@@ -339,6 +340,11 @@ def init():
     if not os.path.exists(install_target):
         os.makedirs(install_target)
     os.symlink(install_target, bundle_path)
+
+    if not os.path.exists(SCRIPT_ROOT_DIR):
+        os.makedirs(SCRIPT_ROOT_DIR)
+    # Copy the config file to ~/.vimpkg/vim_config.json
+    shutil.copy('vim_config.json', VIM_CONFIG_PATH)
 
     if not os.path.exists(BIN_DIR):
         os.makedirs(BIN_DIR)
