@@ -8,43 +8,37 @@
             {
                 "name": "python",
                 "recipe": []
-            },
-            {
-                "name": "pathogen",
-                "recipe": [
-                    "mkdir -p ~/test_clone/.vim/autoload ~/test_clone/.vim/bundle",
-                    "curl -LSso ~/test_clone/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
-                ]
             }
         ],
         "install-target": "test_clone/.vim/bundle"
     },
     "packages": [
         {
+            "depends-on": [],
+            "name": "pathogen",
+            "pkg-url": "https://github.com/tpope/vim-pathogen.git",
+            "recipe": [
+                "mkdir -p ./test_clone/.vim/autoload ./test_clone/.vim/bundle",
+                "curl -LSso ./test_clone/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+            ]
+        },
+        {
             "depends-on": [
                 {
                     "name": "ctags",
                     "recipe": [
-                        "curl 'http://iweb.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz' -o ctags-5.8.tar.gz",
+                        "curl -LSso ctags-5.8.tar.gz 'http://iweb.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz'",
                         "tar xzf ctags-5.8.tar.gz",
                         "cd ctags-5.8",
                         "sudo ./configure",
-                        "sudo make"
+                        "sudo make",
+                        "cp ctags ../../../bin/tagbar/ctags"
                     ]
                 }
             ],
             "name": "tagbar",
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
             "recipe": []
-        },
-        {
-            "depends-on": [],
-            "name": "apt-vim",
-            "pkg-url": "https://github.com/egalpin/apt-vim.git",
-            "recipe": [
-                "ls -la",
-                "pwd"
-            ]
         }
     ]
 }
