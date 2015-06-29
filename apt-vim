@@ -4,6 +4,7 @@ from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
 SCRIPT_ROOT_DIR = os.path.join(os.path.expanduser("~"), '.vimpkg')
+VIM_ROOT_DIR = os.path.join(os.path.expanduser("~"), '.vim')
 SRC_DIR = os.path.join(SCRIPT_ROOT_DIR, 'src')
 #BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
 GBL = 'global'
@@ -332,6 +333,9 @@ def exe_shell_commands(commands=None):
     return True
 
 def init():
+    if not os.path.exists(VIM_ROOT_DIR):
+        os.makedirs(VIM_ROOT_DIR)
+
     if not os.path.exists(SCRIPT_ROOT_DIR):
         os.makedirs(SCRIPT_ROOT_DIR)
     # Copy the config file to ~/.vimpkg/vim_config.json
