@@ -85,14 +85,15 @@ def status_update(pkg_name):
     print '\nCloning, configuring, and installing `' + pkg_name + '`'
 
 def install_pkg(vimpkg):
+    status_update(vimpkg.name)
     install_target = get_install_target()
-    if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
-        # Install dependencies of package
-        install_dependencies(vimpkg.name, vimpkg.depends_on)
-        # Clone the plugin and run any post-install commands
-        __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, vimpkg.recipe)
-        # Change back to the DIR containing this script
-        os.chdir(SCRIPT_ROOT_DIR)
+    #if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
+    # Install dependencies of package
+    install_dependencies(vimpkg.name, vimpkg.depends_on)
+    # Clone the plugin and run any post-install commands
+    __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, vimpkg.recipe)
+    # Change back to the DIR containing this script
+    os.chdir(SCRIPT_ROOT_DIR)
 
 def get_pkg_name(git_url):
     vimpkg = get_vimpkg(git_url)
@@ -119,9 +120,8 @@ def add_pkg(pkg_name, git_url):
                 + '\n\t`apt-vim install ' + git_url + '`'
         sys.exit(0)
 
-    status_update(pkg_name)
     # Get dependencies of package
-    depends = get_depend()
+    depends = get_depend(pkg_name)
     vimpkg.depends_on = depends
 
     msg = 'Any commands to run after cloning `' + pkg_name + '`?'
@@ -183,12 +183,15 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
     if confirm_continue:
         return user_confirm(confirm_msg)
 
-#def confirm_install(pkg_name, install_target, git_url, vim_config):
-    #if report_fail('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
-        ## Delete plugin and its dependencies/src, delete package from json
-        #vim_config[PKGS] = remove_pkg(pkg_name, git_url, install_target, vim_config)
-        #return True
-    #return False
+def add_overwrite(pkg_name, git_url):
+    install_target = get_install_target()
+    if user_confirm('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
+        # Delete plugin and its dependencies/src
+        remove_pkg(pkg_name, install_target)
+        # Delete package from json
+        VIM_CONFIG[PKGS] = remove_pkg_ref(pkg_name)
+        return True
+    return False
 
 def remove_pkg(pkg_name, install_target):
     remove_pkg_src(pkg_name)
@@ -217,9 +220,9 @@ def remove_pkg_plugin(pkg_name, install_target):
     dir = os.path.join(install_target, pkg_name)
     remove_dir(dir)
 
-def get_depend():
+def get_depend(pkg_name='this plugin'):
     depends = []
-    if user_confirm('Does this plugin have any Dependencies?'):
+    if user_confirm('Does ' + pkg_name + ' have any Dependencies?'):
         i = 1;
         dep_name = raw_input('Name for dependency ' + str(i) + ':  ')
         while dep_name != "":
@@ -346,7 +349,8 @@ def __handle_install(argv, options, git_urls):
         #TODO Interactively iterate and install each package in vim_config[PKGS]
         for pkg in VIM_CONFIG[PKGS]:
             vimpkg = VimPackage.dict_to_vimpkg(pkg)
-            install_pkg(vimpkg)
+            if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
+                install_pkg(vimpkg)
         return
     #TODO process cmd options, then install
     # Command line option for specifying pkg details VS installing from file
@@ -356,15 +360,17 @@ def __handle_install(argv, options, git_urls):
         if not vimpkg:
             vimpkg = add_pkg(pkg_name, git_url)
             save_vim_config(vimpkg, VIM_CONFIG_PATH)
-        ASSUME_YES = True
         install_pkg(vimpkg)
-        ASSUME_YES = False
 
 def __handle_add(argv, options, git_urls):
     install_target = get_install_target()
-    pkg_name = get_pkg_name(git_url)
-    vimpkg = add_pkg(pkg_name, git_url)
-    save_vim_config(vimpkg, VIM_CONFIG_PATH)
+    for git_url in git_urls:
+        pkg_name = get_pkg_name(git_url)
+        if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
+            if not add_overwrite(pkg_name, git_url):
+                continue
+        vimpkg = add_pkg(pkg_name, git_url)
+        save_vim_config(vimpkg, VIM_CONFIG_PATH)
 
 def __handle_remove(argv, options, git_urls):
     global ASSUME_YES
@@ -399,9 +405,7 @@ def __handle_update(argv, options, git_urls):
         msg = 'Confirm update package `' + pkg_name + '`'
         if ASSUME_YES or user_confirm(msg):
             remove_pkg(pkg_name, install_target)
-            ASSUME_YES = True
             install_pkg(vimpkg)
-            ASSUME_YES = False
             print 'Successfully updated package `' + pkg_name + '`'
         else:
             print 'Skipped updating package `' + pkg_name +'`'
@@ -418,6 +422,10 @@ def process_cmd_args():
         sys.exit()
     else:
         options, remainder = getopt.getopt(argv[1:], 'y', ['assume-yes'])
+        for opt,arg in options:
+            if opt in ('-y, --assume-yes'):
+                global ASSUME_YES
+                ASSUME_YES = True
         git_urls = get_urls_from_list(remainder)
         MODES[mode](argv[1:], options, git_urls)
 
@@ -432,6 +440,7 @@ def main():
                 + ' not be automatically insatlled:\n' \
                 + str(missing_dependencies)
     process_cmd_args()
+    print 'Completed successfully!'
 
 
 if __name__ == '__main__':
