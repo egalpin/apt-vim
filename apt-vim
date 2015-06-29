@@ -374,7 +374,7 @@ def get_urls_from_list(check_list):
 
 def __handle_install(argv, options, git_urls):
     global ASSUME_YES
-    if not argv:
+    if not argv or not git_urls:
         # No options and no git URL passed
         #TODO Interactively iterate and install each package in vim_config[PKGS]
         for pkg in VIM_CONFIG[PKGS]:
