@@ -339,7 +339,7 @@ def init():
     load_vim_config()
 
     bundle_path = os.path.join(os.path.expanduser("~"), '.vim/bundle')
-    if os.path.exists(bundle_path):
+    if os.path.lexists(bundle_path):
         dest_path = bundle_path + '.bak'
         shutil.move(bundle_path, dest_path)
     install_target = get_install_target()
