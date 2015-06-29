@@ -10,7 +10,7 @@
                 "recipe": []
             }
         ],
-        "install-target": "test_clone/.vim/bundle"
+        "install-target": "~/.vimpkg/bundle"
     },
     "packages": [
         {
@@ -18,8 +18,8 @@
             "name": "pathogen",
             "pkg-url": "https://github.com/tpope/vim-pathogen.git",
             "recipe": [
-                "mkdir -p ./test_clone/.vim/autoload ./test_clone/.vim/bundle",
-                "curl -LSso ./test_clone/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                "mkdir -p ~/.vim/autoload ~/.vim/bundle",
+                "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
             ]
         },
         {
