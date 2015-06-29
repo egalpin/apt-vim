@@ -321,7 +321,6 @@ def exe_shell_commands(commands=None):
         commands = []
     for com in commands:
         com = com.replace('~', os.path.expanduser("~"))
-        print 'Command: ', com
         try:
             if 'cd' in com:
                 os.chdir(shlex.split(com)[1])
