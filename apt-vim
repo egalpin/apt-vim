@@ -332,6 +332,12 @@ def exe_shell_commands(commands=None):
     return True
 
 def init():
+    if not os.path.exists(SCRIPT_ROOT_DIR):
+        os.makedirs(SCRIPT_ROOT_DIR)
+    # Copy the config file to ~/.vimpkg/vim_config.json
+    shutil.copy('vim_config.json', VIM_CONFIG_PATH)
+    load_vim_config()
+
     bundle_path = os.path.join(os.path.expanduser("~"), '.vim/bundle')
     if os.path.exists(bundle_path):
         dest_path = bundle_path + '.bak'
@@ -341,15 +347,12 @@ def init():
         os.makedirs(install_target)
     os.symlink(install_target, bundle_path)
 
-    if not os.path.exists(SCRIPT_ROOT_DIR):
-        os.makedirs(SCRIPT_ROOT_DIR)
-    # Copy the config file to ~/.vimpkg/vim_config.json
-    shutil.copy('vim_config.json', VIM_CONFIG_PATH)
 
     if not os.path.exists(BIN_DIR):
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
+
     missing_deps = []
     deps = VIM_CONFIG[GBL][DPND]
     for dep in deps:
@@ -456,7 +459,6 @@ def usage():
     print 'Valid modes: ', str(MODES.keys().sort()), '\n'
 
 def main():
-    load_vim_config()
     missing_dependencies = init()
     if missing_dependencies:
         print 'Cannot proceed. Missing the following dependencies that could' \
