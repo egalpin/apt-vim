@@ -70,7 +70,6 @@ def load_vim_config(file_path=VIM_CONFIG_PATH):
     VIM_CONFIG = json.loads(json_file)
 
 def get_install_target():
-    #path = os.path.join(SCRIPT_ROOT_DIR, VIM_CONFIG[GBL][TRG_DIR])
     path = VIM_CONFIG[GBL][TRG_DIR]
     path = path.replace('~', os.path.expanduser('~'))
     return path
@@ -91,7 +90,6 @@ def status_update(pkg_name):
 def install_pkg(vimpkg):
     status_update(vimpkg.name)
     install_target = get_install_target()
-    #if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
     # Install dependencies of package
     install_dependencies(vimpkg.name, vimpkg.depends_on)
     # Clone the plugin and run any post-install commands
@@ -111,13 +109,11 @@ def get_pkg_name(git_url):
     return pkg_name
 
 def add_pkg(pkg_name, git_url):
-    #TODO: add git_url and post-install to vim_config.json
     vimpkg = VimPackage(pkg_url=git_url)
     vimpkg.name = pkg_name
     install_target = get_install_target()
 
     if os.path.exists(os.path.join(install_target, pkg_name)): # or \
-            #git_url in [p[PKG_URL] for p in vim_config[PKGS]]:
         print 'Skipping installed package `' + pkg_name + '`'
         print 'To re-install `' + pkg_name + '` run:' \
                 + '\n\t`apt-vim remove ' + pkg_name + '`' \
@@ -152,9 +148,6 @@ def __install_pkg(pkg_name, git_url, install_target, commands=[]):
 def install_dependencies(pkg_name, dependencies=[]):
     if dependencies:
         # Change to directory with dependency source
-        #os.chdir(BIN_DIR)
-        #if not os.path.exists(pkg_name):
-            #os.makedirs(pkg_name)
         os.chdir(SRC_DIR)
         if not os.path.exists(pkg_name):
             os.makedirs(pkg_name)
@@ -238,8 +231,6 @@ def get_depend(pkg_name='this plugin'):
 
 def __get_depend(name):
     dep = Dependency(name)
-    #msg = 'Any commands to run to install Dependency?'
-    #dep.recipe = get_recipe(msg)
     dep.recipe = get_recipe()
     return dep
 
@@ -376,14 +367,12 @@ def __handle_install(argv, options, git_urls):
     global ASSUME_YES
     if not argv or not git_urls:
         # No options and no git URL passed
-        #TODO Interactively iterate and install each package in vim_config[PKGS]
         for pkg in VIM_CONFIG[PKGS]:
             vimpkg = VimPackage.dict_to_vimpkg(pkg)
             if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
                 install_pkg(vimpkg)
         return
     #TODO process cmd options, then install
-    # Command line option for specifying pkg details VS installing from file
     for git_url in git_urls:
         vimpkg = get_vimpkg(git_url)
         pkg_name = get_pkg_name(git_url)
