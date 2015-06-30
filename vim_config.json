@@ -56,14 +56,6 @@
                         "sudo make install"
                     ]
                 }
-            },
-            {
-                "name": "colors",
-                "recipe": {
-                    "all": [
-                        "git clone https://github.com/flazz/vim-colorschemes.git ~/.vim"
-                    ]
-                }
             }
         ],
         "install-target": "~/.vimpkg/bundle"
@@ -77,6 +69,16 @@
                 "all": [
                     "mkdir -p ~/.vim/autoload ~/.vim/bundle",
                     "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                ]
+            }
+        },
+        {
+            "depends-on": [],
+            "name": "colors",
+            "pkg-url": "https://github.com/flazz/vim-colorschemes.git",
+            "recipe": {
+                "all": [
+                    "mv colors ~/.vim"
                 ]
             }
         },
