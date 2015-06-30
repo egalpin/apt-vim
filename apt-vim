@@ -469,6 +469,7 @@ def main():
         print 'Cannot proceed. Missing the following dependencies that could' \
                 + ' not be automatically insatlled:\n' \
                 + str(missing_dependencies)
+        sys.exit(1)
     load_vim_config()
     process_cmd_args()
     print 'Completed successfully!'
