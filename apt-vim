@@ -149,6 +149,8 @@ def __install_pkg(pkg_name, git_url, install_target, commands=[]):
     # Change to directory with vim plugins
     os.chdir(install_target)
     clone_pkg(git_url, pkg_name)
+    if not os.path.exists(pkg_name):
+        os.makedirs(pkg_name)
     os.chdir(pkg_name)
     if not exe_shell_commands(commands):
         report_fail('Failed to intall ' + pkg_name)
