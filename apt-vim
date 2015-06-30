@@ -17,7 +17,7 @@ RECIPE = 'recipe'
 VIM_CONFIG = None
 OS = 'os'
 HOST_OS = platform.system().lower()
-VIM_CONFIG_PATH = 'vim_config.json' #os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
+VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
 
 ####### CMD LINE FLAGS #######
 ASSUME_YES = False
@@ -489,7 +489,7 @@ def process_cmd_args():
             first_run()
             return
         usage()
-        sys.exit()
+        sys.exit(1)
     else:
         missing_dependencies = init()
         if missing_dependencies:
