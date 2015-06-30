@@ -161,9 +161,12 @@ def install_dependencies(pkg_name, dependencies=[]):
         os.chdir(pkg_name)
 
     for dep in dependencies:
-        commands = dep.get_recipe()
-        if not exe_shell_commands(commands):
-            report_fail('Failed to intall ' + pkg_name)
+        if not check_requirements([dep.name]):
+            commands = dep.get_recipe()
+            if not exe_shell_commands(commands):
+                report_fail('Failed to intall ' + pkg_name)
+        else:
+            print '`' + dep.name + '` already in PATH'
 
 def user_confirm(msg=None):
     if msg is None:
