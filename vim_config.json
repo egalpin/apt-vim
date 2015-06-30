@@ -25,6 +25,17 @@
         	}	                
         },
         {
+        	"depends-on": [],
+        	"name": "TEST_PACKAGE",
+        	"pkg-url": "https://github.com/brookhong/cscope.vim.git",
+        	"recipe": {
+        		"darwin": [
+        			"ls",
+        			"pwd"
+        		]
+        	}
+    	},
+        {
             "depends-on": [
                 {
                     "name": "ctags",
