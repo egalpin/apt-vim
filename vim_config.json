@@ -3,11 +3,11 @@
         "depends-on": [
             {
                 "name": "git",
-                "recipe": []
+                "recipe": {}
             },
             {
                 "name": "python",
-                "recipe": []
+                "recipe": {}
             }
         ],
         "install-target": "~/.vimpkg/bundle"
@@ -17,28 +17,40 @@
             "depends-on": [],
             "name": "pathogen",
             "pkg-url": "https://github.com/tpope/vim-pathogen.git",
-            "recipe": [
-                "mkdir -p ~/.vim/autoload ~/.vim/bundle",
-                "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
-            ]
+            "recipe": {
+                "all": [
+                    "mkdir -p ~/.vim/autoload ~/.vim/bundle",
+                    "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                ]
+            }
         },
         {
             "depends-on": [
                 {
                     "name": "ctags",
-                    "recipe": [
-                        "curl -LSso ctags-5.8.tar.gz 'http://iweb.dl.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz'",
-                        "tar xzf ctags-5.8.tar.gz",
-                        "cd ctags-5.8",
-                        "sudo ./configure",
-                        "sudo make",
-                        "sudo make install"
-                    ]
+                    "recipe": {
+                        "darwin": [
+                            "curl -LSso ctags-5.8.tar.gz 'http://sourceforge.net/projects/ctags/files/ctags/5.8/ctags-5.8.tar.gz/download?use_mirror=iweb'",
+                            "tar xzf ctags-5.8.tar.gz",
+                            "cd ctags-5.8",
+                            "sudo ./configure",
+                            "sudo make",
+                            "sudo make install"
+                        ],
+                        "linux": [
+                            "curl -LSso ctags-5.8.tar.gz 'http://sourceforge.net/projects/ctags/files/ctags/5.8/ctags-5.8.tar.gz/download?use_mirror=iweb'",
+                            "tar xzf ctags-5.8.tar.gz",
+                            "cd ctags-5.8",
+                            "sudo ./configure",
+                            "sudo make",
+                            "sudo make install"
+                        ]
+                    }
                 }
             ],
             "name": "tagbar",
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
-            "recipe": []
+            "recipe": {}
         }
     ]
 }
