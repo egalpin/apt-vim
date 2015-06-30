@@ -385,8 +385,8 @@ def first_run():
     if not os.path.exists(install_target):
         os.makedirs(install_target)
     os.symlink(install_target, bundle_path)
-    #if not os.path.exists(BIN_DIR):
-        #os.makedirs(BIN_DIR)
+    if not os.path.exists(BIN_DIR):
+        os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
 
