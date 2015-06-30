@@ -85,6 +85,16 @@
         },
         {
             "depends-on": [],
+            "name": "fonts",
+            "pkg-url": "https://github.com/powerline/fonts.git",
+            "recipe": {
+                "all": [
+                    "./install.sh"
+                ]
+            }
+        },
+        {
+            "depends-on": [],
             "name": "tagbar",
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
             "recipe": {}
