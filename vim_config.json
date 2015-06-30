@@ -22,19 +22,8 @@
 	            	"mkdir -p ~/.vim/autoload ~/.vim/bundle",
 	                "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
             	]
-        	}	                
-        },
-        {
-        	"depends-on": [],
-        	"name": "TEST_PACKAGE",
-        	"pkg-url": "https://github.com/brookhong/cscope.vim.git",
-        	"recipe": {
-        		"darwin": [
-        			"ls",
-        			"pwd"
-        		]
         	}
-    	},
+        },
         {
             "depends-on": [
                 {
@@ -61,84 +50,6 @@
             ],
             "name": "tagbar",
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [
-                {
-                    "name": "cscope",
-                    "recipe": {
-		            	"darwin": [
-		            		"curl -LSso cscope-15.8b.tar.gz http://sourceforge.net/projects/cscope/files/latest/download?source=files",
-	                        "tar xzf cscope-15.8b.tar.gz",
-	                        "cd cscope-15.8b",
-	                        "sudo ./configure",
-	                        "sudo make",
-	                        "sudo make install"
-		            	],
-		            	"linux": [
-		            		"curl -LSso cscope-15.8b.tar.gz http://sourceforge.net/projects/cscope/files/latest/download?source=files",
-	                        "tar xzf cscope-15.8b.tar.gz",
-	                        "cd cscope-15.8b",
-	                        "sudo ./configure",
-	                        "sudo make",
-	                        "sudo make install"
-		            	]
-		            }
-                }
-            ],
-            "name": "cscope.vim",
-            "pkg-url": "https://github.com/brookhong/cscope.vim.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "YouCompleteMe",
-            "pkg-url": "https://github.com/Valloric/YouCompleteMe.git",
-            "recipe": {
-            	"all": [
-            		"git submodule update --init --recursive",
-                	"./install.sh --clang-completer"
-            	]
-            }
-        },
-        {
-            "depends-on": [],
-            "name": "tagbar-phpctags.vim",
-            "pkg-url": "https://github.com/vim-php/tagbar-phpctags.vim.git",
-            "recipe": {
-            	"all": [
-            		"make"
-            	]
-            }
-        },
-        {
-            "depends-on": [],
-            "name": "vimproc.vim",
-            "pkg-url": "https://github.com/Shougo/vimproc.vim.git",
-            "recipe": {
-            	"all": [
-            		"make"
-            	]
-            }
-        },
-        {
-            "depends-on": [
-                {
-                    "name": "node",
-                    "recipe": {
-                        "darwin": [
-                            "ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"",
-                            "brew install node"
-                        ],
-                        "linux": [
-                        	"sudo apt-get install -y node npm"
-                        ]
-                    }
-                }
-            ],
-            "name": "tern_for_vim",
-            "pkg-url": "https://github.com/marijnh/tern_for_vim.git",
             "recipe": {}
         }
     ]
