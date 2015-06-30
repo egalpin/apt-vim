@@ -375,11 +375,15 @@ def get_urls_from_list(check_list):
             urls.append(item)
     return urls
 
+def get_installed_pkgs():
+    return os.listdir(os.path.join(VIM_ROOT_DIR, 'bundle'))
+
 def __handle_install(argv, options, git_urls):
     global ASSUME_YES
     if not argv or not git_urls:
         # No options and no git URL passed
-        for pkg in VIM_CONFIG[PKGS]:
+        for pkg in [ p for p in VIM_CONFIG[PKGS] if  \
+                p[NAME] not in get_installed_pkgs() ]:
             vimpkg = VimPackage.dict_to_vimpkg(pkg)
             if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
                 install_pkg(vimpkg)
