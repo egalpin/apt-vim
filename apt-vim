@@ -339,7 +339,7 @@ def exe_shell_commands(commands=None):
             return report_fail('Command `' + com + '` failed.')
     return True
 
-def init():
+def first_run():
     if os.path.exists(VIM_ROOT_DIR):
         shutil.copytree(VIM_ROOT_DIR, os.path.join(os.path.expanduser('~'), '.vim.bak'))
         shutil.rmtree(VIM_ROOT_DIR)
@@ -359,13 +359,13 @@ def init():
     if not os.path.exists(install_target):
         os.makedirs(install_target)
     os.symlink(install_target, bundle_path)
-
-
     #if not os.path.exists(BIN_DIR):
         #os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
 
+def init():
+    load_vim_config()
     missing_deps = []
     deps = VIM_CONFIG[GBL][DPND]
     for dep in deps:
@@ -459,9 +459,19 @@ def process_cmd_args():
     argv = sys.argv[1:]
     mode = argv[0].lower()
     if mode not in MODES:
+        if mode == 'init':
+            first_run()
+            return
         usage()
         sys.exit()
     else:
+        missing_dependencies = init()
+        if missing_dependencies:
+            print 'Cannot proceed. Missing the following dependencies that could' \
+                    + ' not be automatically insatlled:\n' \
+                    + str(missing_dependencies)
+            sys.exit(1)
+
         options, remainder = getopt.getopt(argv[1:], 'y', ['assume-yes'])
         for opt,arg in options:
             if opt in ('-y, --assume-yes'):
@@ -474,13 +484,6 @@ def usage():
     print 'Valid modes: ', str(MODES.keys().sort()), '\n'
 
 def main():
-    missing_dependencies = init()
-    if missing_dependencies:
-        print 'Cannot proceed. Missing the following dependencies that could' \
-                + ' not be automatically insatlled:\n' \
-                + str(missing_dependencies)
-        sys.exit(1)
-    load_vim_config()
     process_cmd_args()
     print 'Completed successfully!'
 
