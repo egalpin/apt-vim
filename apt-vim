@@ -217,15 +217,15 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
 
 def add_overwrite(pkg_name, git_url):
     if user_confirm('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
+        vimpkg = get_vimpkg(git_url)
         # Delete plugin and its dependencies/src
-        remove_pkg(git_url)
+        remove_pkg(vimpkg)
         # Delete package from json
-        VIM_CONFIG[PKGS] = remove_pkg_ref(pkg_name)
+        VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
         return True
     return False
 
-def remove_pkg(git_url):
-    vimpkg = get_vimpkg(git_url)
+def remove_pkg(vimpkg):
     remove_pkg_src(vimpkg)
     remove_pkg_plugin(vimpkg)
     # If no other package depends on this binary, remove it
@@ -448,11 +448,12 @@ def __handle_remove(argv, options, git_urls):
         report_fail('No package URL specified. Exiting', confirm_continue=False)
     #TODO process cmd options
     for git_url in git_urls:
-        pkg_name = get_pkg_name_from_url(git_url)
+        vimpkg = get_vimpkg(git_url)
+        pkg_name = vimpkg.name
         msg = 'Confirm remove package `' + pkg_name + '`'
         if ASSUME_YES or user_confirm(msg):
-            remove_pkg(git_url)
-            VIM_CONFIG[PKGS] = remove_pkg_ref(pkg_name)
+            remove_pkg(vimpkg)
+            VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
             save_vim_config(file_path=VIM_CONFIG_PATH)
             print 'Successfully removed package `' + pkg_name + '`'
         else:
@@ -471,7 +472,7 @@ def __handle_update(argv, options, git_urls):
         #TODO process cmd options
         msg = 'Confirm update package `' + pkg_name + '`'
         if ASSUME_YES or user_confirm(msg):
-            remove_pkg(git_url)
+            remove_pkg(vimpkg)
             install_pkg(vimpkg)
             print 'Successfully updated package `' + pkg_name + '`'
         else:
