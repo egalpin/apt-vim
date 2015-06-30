@@ -56,6 +56,14 @@
                         "sudo make install"
                     ]
                 }
+            },
+            {
+                "name": "colors",
+                "recipe": {
+                    "all": [
+                        "git clone https://github.com/flazz/vim-colorschemes.git ~/.vim"
+                    ]
+                }
             }
         ],
         "install-target": "~/.vimpkg/bundle"
@@ -80,15 +88,15 @@
         },
         {
             "depends-on": [
-            	{
-            		"name": "libncurses5-dev",
-            		"recipe": {
-            			"linux": [
-            				"sudo apt-get install -y libncurses5-dev"
-            			],
-            			"all": []
-            		}
-        		},
+                {
+                    "name": "libncurses5-dev",
+                    "recipe": {
+                        "linux": [
+                            "sudo apt-get install -y libncurses5-dev"
+                        ],
+                        "all": []
+                    }
+                },
                 {
                     "name": "cscope",
                     "recipe": {
