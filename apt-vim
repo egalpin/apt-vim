@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json, sys, os, re, shutil, shlex, getopt
+import json, sys, os, re, shutil, shlex, getopt, platform
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
@@ -15,24 +15,38 @@ PKG_URL = 'pkg-url'
 PKGS = 'packages'
 RECIPE = 'recipe'
 VIM_CONFIG = None
+OS = 'os'
+HOST_OS = platform.system().lower()
 VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
 
 ####### CMD LINE FLAGS #######
 ASSUME_YES = False
 
+class Recipe:
+    #def __init__(self, recipe=[], os=''):
+        #self.recipe = recipe
+        #self.os = os
+
+    #def to_dict(self):
+        ## Convert python variable names to json variable names
+        #return self.__dict__
+
+    @staticmethod
+    def dict_to_recipe(d):
+        return Recipe(d[RECIPE], d[OS])
+
+
 class Dependency:
-    def __init__(self, name='dep', recipe=[]):
+    def __init__(self, name='dep', recipe={}):
         self.name = name
         self.recipe = recipe
 
-    def to_json(self):
-        res = json.dumps(self, default=lambda o: o.__dict__)
-        # Convert python variable names to json variable names
-        return res.replace('_', '-')
-
     def to_dict(self):
         # Convert python variable names to json variable names
-        return {k.replace('_', '-'): v for k,v in self.__dict__.items()}
+        d = {k.replace('_', '-'): v for k,v in self.__dict__.items()}
+        #recipes = [ r.to_dict() for r in self.recipe ]
+        #d[RECIPE] = recipes
+        return d
 
     @staticmethod
     def dict_to_dep(d):
@@ -40,22 +54,19 @@ class Dependency:
 
 
 class VimPackage:
-    def __init__(self, pkg_url='', name='', depends_on=[], recipe=[]):
+    def __init__(self, pkg_url='', name='', depends_on=[], recipe={}):
         self.pkg_url = pkg_url
         self.name = name
         self.depends_on = depends_on
         self.recipe = recipe
 
-    def to_json(self):
-        res = json.dumps(self, default=lambda o: o.__dict__)
-        # Convert python variable names to json variable names
-        return res.replace('_', '-')
-
     def to_dict(self):
         # Convert python variable names to json variable names
         d = {k.replace('_', '-'): v for k,v in self.__dict__.items()}
         deps = [ dep.to_dict() for dep in self.depends_on ]
+        #recipes = [ r.to_dict() for r in self.recipe ]
         d[DPND] = deps
+        #d[RECIPE] = recipes
         return d
 
     @staticmethod
@@ -93,7 +104,10 @@ def install_pkg(vimpkg):
     # Install dependencies of package
     install_dependencies(vimpkg.name, vimpkg.depends_on)
     # Clone the plugin and run any post-install commands
-    __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, vimpkg.recipe)
+    recipe_name = 'all'
+    if HOST_OS in vimpkg.recipe:
+        recipe_name = HOST_OS
+    __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, vimpkg.recipe[recipe_name])
     # Change back to the DIR containing this script
     os.chdir(SCRIPT_ROOT_DIR)
 
@@ -126,7 +140,8 @@ def add_pkg(pkg_name, git_url):
 
     msg = 'Any commands to run after cloning `' + pkg_name + '`?'
     post_install_recipe = get_recipe(msg)
-    vimpkg.recipe = post_install_recipe
+    if post_install_recipe:
+        vimpkg.recipe[HOST_OS] = post_install_recipe
     return vimpkg
 
 def clone_pkg(git_url, pkg_name=None):
@@ -154,7 +169,10 @@ def install_dependencies(pkg_name, dependencies=[]):
         os.chdir(pkg_name)
 
     for dep in dependencies:
-        commands = dep.recipe
+        recipe_name = 'all'
+        if HOST_OS in dep.recipe:
+            recipe_name = HOST_OS
+        commands = dep.recipe[recipe_name]
         if not exe_shell_commands(commands):
             report_fail('Failed to intall ' + pkg_name)
 
@@ -231,7 +249,9 @@ def get_depend(pkg_name='this plugin'):
 
 def __get_depend(name):
     dep = Dependency(name)
-    dep.recipe = get_recipe()
+    recipe = get_recipe()
+    if recipe:
+        dep.recipe[HOST_OS] = recipe
     return dep
 
 def get_recipe(msg=None):
@@ -457,6 +477,7 @@ def main():
         print 'Cannot proceed. Missing the following dependencies that could' \
                 + ' not be automatically insatlled:\n' \
                 + str(missing_dependencies)
+    load_vim_config()
     process_cmd_args()
     print 'Completed successfully!'
 
