@@ -22,38 +22,45 @@ VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
 ####### CMD LINE FLAGS #######
 ASSUME_YES = False
 
-class Recipe:
-    #def __init__(self, recipe=[], os=''):
-        #self.recipe = recipe
-        #self.os = os
 
-    #def to_dict(self):
-        ## Convert python variable names to json variable names
-        #return self.__dict__
+class PkgItem(object):
+    def get_recipe(self):
+        recipe = []
+        if HOST_OS in self.recipe:
+            recipe = self.recipe[HOST_OS]
+        elif 'all' in self.recipe:
+            recipe = self.recipe['all']
+        if self.recipe and not recipe:
+            if not report_fail('No recipe for your OS'):
+                sys.exit(1)
+        return recipe
 
-    @staticmethod
-    def dict_to_recipe(d):
-        return Recipe(d[RECIPE], d[OS])
-
-
-class Dependency:
+class Dependency(PkgItem):
     def __init__(self, name='dep', recipe={}):
         self.name = name
         self.recipe = recipe
 
     def to_dict(self):
         # Convert python variable names to json variable names
-        d = {k.replace('_', '-'): v for k,v in self.__dict__.items()}
-        #recipes = [ r.to_dict() for r in self.recipe ]
-        #d[RECIPE] = recipes
-        return d
+        return {k.replace('_', '-'): v for k,v in self.__dict__.items()}
+
+    #def get_recipe(self):
+        #recipe = []
+        #if HOST_OS in self.recipe:
+            #recipe = self.recipe[HOST_OS]
+        #elif 'all' in self.recipe:
+            #recipe = self.recipe['all']
+        #if self.recipe and not recipe:
+            #if not report_fail('No recipe for your OS'):
+                #sys.exit(1)
+        #return recipe
 
     @staticmethod
     def dict_to_dep(d):
         return Dependency(d[NAME], d[RECIPE])
 
 
-class VimPackage:
+class VimPackage(PkgItem):
     def __init__(self, pkg_url='', name='', depends_on=[], recipe={}):
         self.pkg_url = pkg_url
         self.name = name
@@ -64,10 +71,19 @@ class VimPackage:
         # Convert python variable names to json variable names
         d = {k.replace('_', '-'): v for k,v in self.__dict__.items()}
         deps = [ dep.to_dict() for dep in self.depends_on ]
-        #recipes = [ r.to_dict() for r in self.recipe ]
         d[DPND] = deps
-        #d[RECIPE] = recipes
         return d
+
+    #def get_recipe(self):
+        #recipe = []
+        #if HOST_OS in self.recipe:
+            #recipe = self.recipe[HOST_OS]
+        #elif 'all' in self.recipe:
+            #recipe = self.recipe['all']
+        #if self.recipe and not recipe:
+            #if not report_fail('No recipe for your OS'):
+                #sys.exit(1)
+        #return recipe
 
     @staticmethod
     def dict_to_vimpkg(d):
@@ -104,11 +120,7 @@ def install_pkg(vimpkg):
     # Install dependencies of package
     install_dependencies(vimpkg.name, vimpkg.depends_on)
     # Clone the plugin and run any post-install commands
-    recipe = []
-    if HOST_OS in vimpkg.recipe:
-        recipe = vimpkg.recipe[HOST_OS]
-    elif 'all' in vimpkg.recipe:
-        recipe = vimpkg.recipe['all']
+    recipe = vimpkg.get_recipe()
     __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, recipe)
     # Change back to the DIR containing this script
     os.chdir(SCRIPT_ROOT_DIR)
@@ -171,10 +183,7 @@ def install_dependencies(pkg_name, dependencies=[]):
         os.chdir(pkg_name)
 
     for dep in dependencies:
-        recipe_name = 'all'
-        if HOST_OS in dep.recipe:
-            recipe_name = HOST_OS
-        commands = dep.recipe[recipe_name]
+        commands = dep.get_recipe()
         if not exe_shell_commands(commands):
             report_fail('Failed to intall ' + pkg_name)
 
