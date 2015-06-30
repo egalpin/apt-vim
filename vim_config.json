@@ -10,10 +10,18 @@
                 "recipe": {}
             },
             {
+            	"name": "brew",
+            	"recipe": {
+            		"darwin": [
+            			"ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\""
+            		],
+            		"linux": []
+            	}
+            }
+            {
                 "name": "node",
                 "recipe": {
                     "darwin": [
-                        "ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"",
                         "brew install node"
                     ],
                     "linux": [
@@ -104,23 +112,48 @@
             "recipe": {}
         },
         {
-            "depends-on": [],
+            "depends-on": [
+            	{
+            		"name": "cmake",
+            		"recipe": {
+            			"linux": [
+            				"sudo apt-get install -y cmake"
+            			],
+            			"darwin": [
+            				"brew install cmake"
+            			]
+            		}
+            	},
+            	{
+            		"name": "python-dev",
+            		"recipe": {
+            			"linux": [
+            				"sudo apt-get install -y python-dev"
+            			],
+            			"darwin": []
+            		}
+            	}
+            ],
             "name": "YouCompleteMe",
             "pkg-url": "https://github.com/Valloric/YouCompleteMe.git",
             "recipe": {
-            	"linux": [
-                    "sudo apt-get install -y cmake",
+            	"all": [
             		"git submodule update --init --recursive",
                 	"./install.sh --clang-completer"
-            	],
-                "darwin": [
-            		"git submodule update --init --recursive",
-                	"./install.sh --clang-completer"
-                ]
+            	]
             }
         },
         {
-            "depends-on": [],
+            "depends-on": [
+	            {
+	            	"name": "php",
+	            	"recipe": {
+	            		"linux": [
+	            			"sudo apt-get install -y php5"
+	            		]
+	            	}
+	            }
+            ],
             "name": "tagbar-phpctags.vim",
             "pkg-url": "https://github.com/vim-php/tagbar-phpctags.vim.git",
             "recipe": {
@@ -145,7 +178,6 @@
                     "name": "node",
                     "recipe": {
                         "darwin": [
-                            "ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"",
                             "brew install node"
                         ],
                         "linux": [
