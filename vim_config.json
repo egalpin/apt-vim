@@ -61,8 +61,7 @@
                 "name": "colors",
                 "recipe": {
                     "all": [
-                        "cd ~/.vim",
-                        "git submodule add https://github.com/flazz/vim-colorschemes.git bundle/colorschemes"
+                        "git clone https://github.com/flazz/vim-colorschemes.git ~/.vim"
                     ]
                 }
             }
