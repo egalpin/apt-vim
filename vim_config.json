@@ -8,56 +8,7 @@
             {
                 "name": "python",
                 "recipe": {}
-            },
-            {
-                "name": "brew",
-                "recipe": {
-                    "darwin": [
-                        "ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\""
-                    ],
-                    "linux": []
-                }
-            },
-            {
-                "name": "node",
-                "recipe": {
-                    "darwin": [
-                        "brew install node"
-                    ],
-                    "linux": [
-                        "sudo apt-get install -y node npm"
-                    ]
-                }
-            },
-            {
-                "name": "jsctags",
-                "recipe": {
-                    "darwin": [
-                        "sudo npm install -g git+https://github.com/ramitos/jsctags.git"
-                    ],
-                    "linux": [
-                        "sudo npm install -g git+https://github.com/ramitos/jsctags.git"
-                    ]
-                }
-            },
-            {
-                "name": "ctags",
-                "recipe": {
-                    "darwin": [
-                        "curl -LSso /usr/local/Library/Formula/ctags-better-php.rb https://raw.githubusercontent.com/shawncplus/phpcomplete.vim/master/misc/ctags-better-php.rb",
-                        "brew install ctags-better-php",
-                        "brew link --overwrite ctags-better-php"
-                    ],
-                    "linux": [
-                        "curl -LSso ctags-5.8_better_php_parser.tar.gz https://github.com/shawncplus/phpcomplete.vim/raw/master/misc/ctags-5.8_better_php_parser.tar.gz",
-                        "tar xvf ctags-5.8_better_php_parser.tar.gz",
-                        "./configure",
-                        "make",
-                        "sudo make install"
-                    ]
-                }
             }
-
         ],
         "install-target": "~/.vimpkg/bundle"
     },
@@ -74,309 +25,31 @@
             }
         },
         {
-            "depends-on": [],
-            "name": "colors",
-            "pkg-url": "https://github.com/flazz/vim-colorschemes.git",
-            "recipe": {
-                "all": [
-                    "mv colors ~/.vim"
-                ]
-            }
-        },
-        {
-            "depends-on": [],
-            "name": "fonts",
-            "pkg-url": "https://github.com/powerline/fonts.git",
-            "recipe": {
-                "all": [
-                    "./install.sh"
-                ]
-            }
-        },
-        {
-            "depends-on": [],
+            "depends-on": [
+                {
+                    "name": "ctags",
+                    "recipe": {
+                        "darwin": [
+                            "curl -LSso ctags-5.8.tar.gz 'http://sourceforge.net/projects/ctags/files/ctags/5.8/ctags-5.8.tar.gz/download?use_mirror=iweb'",
+                            "tar xzf ctags-5.8.tar.gz",
+                            "cd ctags-5.8",
+                            "sudo ./configure",
+                            "sudo make",
+                            "sudo make install"
+                        ],
+                        "linux": [
+                            "curl -LSso ctags-5.8.tar.gz 'http://sourceforge.net/projects/ctags/files/ctags/5.8/ctags-5.8.tar.gz/download?use_mirror=iweb'",
+                            "tar xzf ctags-5.8.tar.gz",
+                            "cd ctags-5.8",
+                            "sudo ./configure",
+                            "sudo make",
+                            "sudo make install"
+                        ]
+                    }
+                }
+            ],
             "name": "tagbar",
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "CSApprox",
-            "pkg-url": "",
-            "recipe": {
-                "all": [],
-                "linux": [
-                    "curl -LSso ~/csapprox.zip http://www.vim.org/scripts/download_script.php?src_id=18594",
-                    "mkdir ~/.vim/bundle/CSApprox",
-                    "mv ~/csapprox.zip ~/.vim/bundle/CSApprox",
-                    "cd ~/.vim/bundle/CSApprox",
-                    "unzip csapprox.zip",
-                    "rm csapprox.zip"
-                ]
-            }
-        },
-        {
-            "depends-on": [
-                {
-                    "name": "libncurses5-dev",
-                    "recipe": {
-                        "linux": [
-                            "sudo apt-get install -y libncurses5-dev"
-                        ],
-                        "all": []
-                    }
-                },
-                {
-                    "name": "cscope",
-                    "recipe": {
-                        "darwin": [
-                            "curl -LSso cscope-15.8b.tar.gz http://sourceforge.net/projects/cscope/files/latest/download?source=files",
-                            "tar xzf cscope-15.8b.tar.gz",
-                            "cd cscope-15.8b",
-                            "./configure",
-                            "make",
-                            "sudo make install"
-                        ],
-                        "linux": [
-                            "curl -LSso cscope-15.8b.tar.gz http://sourceforge.net/projects/cscope/files/latest/download?source=files",
-                            "tar xzf cscope-15.8b.tar.gz",
-                            "cd cscope-15.8b",
-                            "./configure",
-                            "make",
-                            "sudo make install"
-                        ]
-                    }
-                }
-            ],
-            "name": "cscope.vim",
-            "pkg-url": "https://github.com/brookhong/cscope.vim.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [
-                {
-                    "name": "cmake",
-                    "recipe": {
-                        "darwin": [
-                            "brew install cmake"
-                        ],
-                        "linux": [
-                            "sudo apt-get install -y cmake"
-                        ]
-                    }
-                },
-                {
-                    "name": "python-dev",
-                    "recipe": {
-                        "darwin": [],
-                        "linux": [
-                            "sudo apt-get install -y python-dev"
-                        ]
-                    }
-                }
-            ],
-            "name": "YouCompleteMe",
-            "pkg-url": "https://github.com/Valloric/YouCompleteMe.git",
-            "recipe": {
-                "all": [
-                    "git submodule update --init --recursive",
-                    "./install.sh --clang-completer"
-                ]
-            }
-        },
-        {
-            "depends-on": [
-                {
-                    "name": "php",
-                    "recipe": {
-                        "linux": [
-                            "sudo apt-get install -y php5"
-                        ]
-                    }
-                }
-            ],
-            "name": "tagbar-phpctags.vim",
-            "pkg-url": "https://github.com/vim-php/tagbar-phpctags.vim.git",
-            "recipe": {
-                "all": [
-                    "make"
-                ]
-            }
-        },
-        {
-            "depends-on": [],
-            "name": "vimproc.vim",
-            "pkg-url": "https://github.com/Shougo/vimproc.vim.git",
-            "recipe": {
-                "all": [
-                    "make"
-                ]
-            }
-        },
-        {
-            "depends-on": [
-                {
-                    "name": "node",
-                    "recipe": {
-                        "darwin": [
-                            "brew install node"
-                        ],
-                        "linux": [
-                            "sudo apt-get install -y node npm"
-                        ]
-                    }
-                }
-            ],
-            "name": "tern_for_vim",
-            "pkg-url": "https://github.com/marijnh/tern_for_vim.git",
-            "recipe": {
-                "all": [
-                    "npm install"
-                ]
-            }
-        },
-        {
-            "depends-on": [],
-            "name": "PreserveNoEOL",
-            "pkg-url": "https://github.com/vim-scripts/PreserveNoEOL.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "QFEnter",
-            "pkg-url": "https://github.com/yssl/QFEnter.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "auto-pairs",
-            "pkg-url": "https://github.com/jiangmiao/auto-pairs.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "ctrlp.vim",
-            "pkg-url": "https://github.com/kien/ctrlp.vim.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "emmet-vim",
-            "pkg-url": "https://github.com/mattn/emmet-vim.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "nerdcommenter",
-            "pkg-url": "https://github.com/scrooloose/nerdcommenter.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "nerdtree",
-            "pkg-url": "https://github.com/scrooloose/nerdtree.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "phpcomplete.vim",
-            "pkg-url": "https://github.com/shawncplus/phpcomplete.vim.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "supertab",
-            "pkg-url": "https://github.com/ervandew/supertab.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "syntastic",
-            "pkg-url": "https://github.com/scrooloose/syntastic.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "tlib_vim",
-            "pkg-url": "https://github.com/tomtom/tlib_vim.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "unite.vim",
-            "pkg-url": "https://github.com/Shougo/unite.vim.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vdebug",
-            "pkg-url": "https://github.com/joonty/vdebug.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-addon-mw-utils",
-            "pkg-url": "https://github.com/MarcWeber/vim-addon-mw-utils.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-airline",
-            "pkg-url": "https://github.com/bling/vim-airline.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-bbye",
-            "pkg-url": "https://github.com/moll/vim-bbye.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-better-whitespace",
-            "pkg-url": "https://github.com/ntpeters/vim-better-whitespace.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-easymotion",
-            "pkg-url": "https://github.com/easymotion/vim-easymotion.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-fugitive",
-            "pkg-url": "https://github.com/tpope/vim-fugitive.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-gitgutter",
-            "pkg-url": "https://github.com/airblade/vim-gitgutter.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-ragtag",
-            "pkg-url": "https://github.com/tpope/vim-ragtag.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-snipmate",
-            "pkg-url": "https://github.com/garbas/vim-snipmate.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-surround",
-            "pkg-url": "https://github.com/tpope/vim-surround.git",
-            "recipe": {}
-        },
-        {
-            "depends-on": [],
-            "name": "vim-togglelist",
-            "pkg-url": "https://github.com/milkypostman/vim-togglelist.git",
             "recipe": {}
         }
     ]
