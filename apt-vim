@@ -30,8 +30,8 @@ class PkgItem(object):
             recipe = self.recipe[HOST_OS]
         elif 'all' in self.recipe:
             recipe = self.recipe['all']
-        if self.recipe and not recipe:
-            if not report_fail('No recipe for your OS'):
+        if self.recipe and HOST_OS not in self.recipe and not recipe:
+            if not report_fail('No recipe for `' + self.name + '` for your OS'):
                 sys.exit(1)
         return recipe
 
