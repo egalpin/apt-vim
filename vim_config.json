@@ -56,21 +56,8 @@
                         "sudo make install"
                     ]
                 }
-            },
-            {
-                "name": "CSApprox",
-                "recipe": {
-                    "all": [],
-                    "linuix": [
-                        "curl -LSso ~/csapprox.zip http://www.vim.org/scripts/download_script.php?src_id=18594",
-                        "mkdir ~/.vim/bundle/CSApprox",
-                        "mv ~/csapprox.zip ~/.vim/bundle/CSApprox",
-                        "cd ~/.vim/bundle/CSApprox",
-                        "unzip csapprox.zip",
-                        "rm csapprox.zip"
-                    ]
-                }
             }
+
         ],
         "install-target": "~/.vimpkg/bundle"
     },
@@ -101,6 +88,22 @@
             "name": "tagbar",
             "pkg-url": "https://github.com/majutsushi/tagbar.git",
             "recipe": {}
+        },
+        {
+            "depends-on": [],
+            "name": "CSApprox",
+            "pkg-url": "",
+            "recipe": {
+                "all": [],
+                "linux": [
+                    "curl -LSso ~/csapprox.zip http://www.vim.org/scripts/download_script.php?src_id=18594",
+                    "mkdir ~/.vim/bundle/CSApprox",
+                    "mv ~/csapprox.zip ~/.vim/bundle/CSApprox",
+                    "cd ~/.vim/bundle/CSApprox",
+                    "unzip csapprox.zip",
+                    "rm csapprox.zip"
+                ]
+            }
         },
         {
             "depends-on": [

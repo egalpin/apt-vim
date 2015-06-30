@@ -136,6 +136,8 @@ def add_pkg(pkg_name, git_url):
     return vimpkg
 
 def clone_pkg(git_url, pkg_name=None):
+    if not git_url:
+        return
     if not pkg_name:
         pkg_name = get_pkg_name_from_url(git_url)
     try:
