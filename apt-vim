@@ -31,8 +31,7 @@ class PkgItem(object):
         elif 'all' in self.recipe:
             recipe = self.recipe['all']
         if self.recipe and HOST_OS not in self.recipe and not recipe:
-            if not report_fail('No recipe for `' + self.name + '` for your OS'):
-                sys.exit(1)
+            report_fail('No recipe for `' + self.name + '` for your OS'):
         return recipe
 
 class Dependency(PkgItem):
@@ -189,7 +188,9 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
         fail_msg = 'Something went wrong...\n'
     print fail_msg
     if confirm_continue:
-        return user_confirm(confirm_msg)
+        if user_confirm(confirm_msg):
+            return True
+    sys.exit(1)
 
 def add_overwrite(pkg_name, git_url):
     install_target = get_install_target()
@@ -415,7 +416,6 @@ def __handle_remove(argv, options, git_urls):
     install_target = get_install_target()
     if not git_urls:
         report_fail('No package URL specified. Exiting', confirm_continue=False)
-        sys.exit(1)
     #TODO process cmd options
     for git_url in git_urls:
         pkg_name = get_pkg_name_from_url(git_url)
@@ -435,7 +435,6 @@ def __handle_update(argv, options, git_urls):
         git_urls = [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]
         if not git_urls:
             report_fail('No package URL specified. Exiting', confirm_continue=False)
-            sys.exit(1)
     for git_url in git_urls:
         vimpkg = get_vimpkg(git_url)
         pkg_name = vimpkg.name

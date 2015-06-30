@@ -87,16 +87,16 @@
                             "curl -LSso cscope-15.8b.tar.gz http://sourceforge.net/projects/cscope/files/latest/download?source=files",
                             "tar xzf cscope-15.8b.tar.gz",
                             "cd cscope-15.8b",
-                            "sudo ./configure",
-                            "sudo make",
+                            "./configure",
+                            "make",
                             "sudo make install"
                         ],
                         "linux": [
                             "curl -LSso cscope-15.8b.tar.gz http://sourceforge.net/projects/cscope/files/latest/download?source=files",
                             "tar xzf cscope-15.8b.tar.gz",
                             "cd cscope-15.8b",
-                            "sudo ./configure",
-                            "sudo make",
+                            "./configure",
+                            "make",
                             "sudo make install"
                         ]
                     }
