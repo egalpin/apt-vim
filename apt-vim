@@ -399,7 +399,7 @@ def init():
         if not check_requirements([dep.name]):
             if (HOST_OS not in dep.recipe and not dep.get_recipe()) or  \
                     not exe_shell_commands(dep.get_recipe()):
-                        missing_deps.append(dep.name)
+                missing_deps.append(dep.name)
     return missing_deps
 
 def get_urls_from_list(check_list):
