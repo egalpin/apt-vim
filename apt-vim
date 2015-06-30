@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-import json, sys, os, re, shutil, shlex, getopt, platform
+import json, sys, os, re, shutil, shlex, getopt, platform, stat
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
 SCRIPT_ROOT_DIR = os.path.join(os.path.expanduser("~"), '.vimpkg')
 VIM_ROOT_DIR = os.path.join(os.path.expanduser("~"), '.vim')
 SRC_DIR = os.path.join(SCRIPT_ROOT_DIR, 'src')
-#BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
+BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
 GBL = 'global'
 DPND = 'depends-on'
 NAME = 'name'
@@ -95,7 +95,7 @@ def install_pkg(vimpkg):
     status_update(vimpkg.name)
     install_target = get_install_target()
     # Install dependencies of package
-    install_dependencies(vimpkg.name, vimpkg.depends_on)
+    install_dependencies(vimpkg)
     # Clone the plugin and run any post-install commands
     recipe = vimpkg.get_recipe()
     __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, recipe)
@@ -155,7 +155,9 @@ def __install_pkg(pkg_name, git_url, install_target, commands=[]):
     if not exe_shell_commands(commands):
         report_fail('Failed to intall ' + pkg_name)
 
-def install_dependencies(pkg_name, dependencies=[]):
+def install_dependencies(vimpkg):
+    pkg_name = vimpkg.name
+    dependencies = vimpkg.depends_on
     if dependencies:
         # Change to directory with dependency source
         os.chdir(SRC_DIR)
@@ -168,8 +170,25 @@ def install_dependencies(pkg_name, dependencies=[]):
             commands = dep.get_recipe()
             if not exe_shell_commands(commands):
                 report_fail('Failed to intall ' + pkg_name)
+            else:
+                exe = find_executable(SRC_DIR, dep.name)
+                if exe:
+                    dst = os.path.join(BIN_DIR, dep.name)
+                    shutil.copyfile(exe, dst)
         else:
             print '`' + dep.name + '` already in PATH'
+
+def find_executable(path, filename):
+    executable = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            f = os.path.join(root, f)
+            if os.path.isfile(f):
+                st = os.stat(f)
+                mode = st.st_mode
+                if mode & executable and filename in f:
+                    return os.path.abspath(f)
+    return None
 
 def user_confirm(msg=None):
     if msg is None:
@@ -197,40 +216,45 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
     sys.exit(1)
 
 def add_overwrite(pkg_name, git_url):
-    install_target = get_install_target()
     if user_confirm('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
+        vimpkg = get_vimpkg(git_url)
         # Delete plugin and its dependencies/src
-        remove_pkg(pkg_name, install_target)
+        remove_pkg(vimpkg)
         # Delete package from json
-        VIM_CONFIG[PKGS] = remove_pkg_ref(pkg_name)
+        VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
         return True
     return False
 
-def remove_pkg(pkg_name, install_target):
-    remove_pkg_src(pkg_name)
-    remove_pkg_plugin(pkg_name, install_target)
-    #TODO: check all dependencies related to pkg_name
+def remove_pkg(vimpkg):
+    remove_pkg_src(vimpkg)
+    remove_pkg_plugin(vimpkg)
     # If no other package depends on this binary, remove it
-    #if pkg_name not in [ dep[NAME] for dep in [p[DPND] for p in remove_pkg_ref(git_url, vim_config)]] ]:
-        #remove_pkg_bin(pkg_name)
+    remove_pkg_bin(vimpkg)
 
 def remove_dir(dir):
     if os.path.exists(dir):
         shutil.rmtree(dir)
 
-#def remove_pkg_bin(pkg_name):
-    #dir = os.path.join(BIN_DIR, pkg_name)
-    #remove_dir(dir)
+def remove_pkg_bin(vimpkg):
+    bins = os.listdir(BIN_DIR)
+    for pkg in VIM_CONFIG[PKGS]:
+        newpkg = VimPackage.dict_to_vimpkg(pkg)
+        for dep in vimpkg.depends_on:
+            if dep.name in bins and  \
+                    dep.name not in [ d.name for d in newpkg.depends_on ]:
+                os.remove(os.path.join(BIN_DIR, dep.name))
+                print 'Removed binary `' + dep.name + '`'
 
-def remove_pkg_src(pkg_name):
-    dir = os.path.join(SRC_DIR, pkg_name)
+
+def remove_pkg_src(vimpkg):
+    dir = os.path.join(SRC_DIR, vimpkg.name)
     remove_dir(dir)
 
-def remove_pkg_ref(pkg_name):
-    return [ p for p in VIM_CONFIG[PKGS] if pkg_name not in p[PKG_URL] ]
+def remove_pkg_ref(vimpkg):
+    return [ p for p in VIM_CONFIG[PKGS] if vimpkg.name not in p[PKG_URL] ]
 
-def remove_pkg_plugin(pkg_name, install_target):
-    dir = os.path.join(install_target, pkg_name)
+def remove_pkg_plugin(vimpkg):
+    dir = os.path.join(get_install_target(), vimpkg.name)
     remove_dir(dir)
 
 def get_depend(pkg_name='this plugin'):
@@ -306,11 +330,11 @@ def check_requirements(requirements=None):
 def valid_url(url):
     regex = re.compile(
             r'^(?:http|ftp)s?://' # http:// or https:// or ftp:// or ftps://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
-        r'localhost|' #localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-        r'(?::\d+)?' # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+            r'localhost|' #localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+            r'(?::\d+)?' # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     match = regex.search(url)
     return True if match else False
 
@@ -361,8 +385,8 @@ def first_run():
     if not os.path.exists(install_target):
         os.makedirs(install_target)
     os.symlink(install_target, bundle_path)
-    #if not os.path.exists(BIN_DIR):
-        #os.makedirs(BIN_DIR)
+    if not os.path.exists(BIN_DIR):
+        os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
 
@@ -424,11 +448,12 @@ def __handle_remove(argv, options, git_urls):
         report_fail('No package URL specified. Exiting', confirm_continue=False)
     #TODO process cmd options
     for git_url in git_urls:
-        pkg_name = get_pkg_name_from_url(git_url)
+        vimpkg = get_vimpkg(git_url)
+        pkg_name = vimpkg.name
         msg = 'Confirm remove package `' + pkg_name + '`'
         if ASSUME_YES or user_confirm(msg):
-            remove_pkg(pkg_name, install_target)
-            VIM_CONFIG[PKGS] = remove_pkg_ref(pkg_name)
+            remove_pkg(vimpkg)
+            VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
             save_vim_config(file_path=VIM_CONFIG_PATH)
             print 'Successfully removed package `' + pkg_name + '`'
         else:
@@ -447,7 +472,7 @@ def __handle_update(argv, options, git_urls):
         #TODO process cmd options
         msg = 'Confirm update package `' + pkg_name + '`'
         if ASSUME_YES or user_confirm(msg):
-            remove_pkg(pkg_name, install_target)
+            remove_pkg(vimpkg)
             install_pkg(vimpkg)
             print 'Successfully updated package `' + pkg_name + '`'
         else:
@@ -465,7 +490,7 @@ def process_cmd_args():
             first_run()
             return
         usage()
-        sys.exit()
+        sys.exit(1)
     else:
         missing_dependencies = init()
         if missing_dependencies:
