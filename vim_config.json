@@ -80,6 +80,15 @@
         },
         {
             "depends-on": [
+            	{
+            		"name": "libncurses5-dev",
+            		"recipe": {
+            			"linux": [
+            				"sudo apt-get install -y libncurses5-dev"
+            			],
+            			"all": []
+            		}
+        		},
                 {
                     "name": "cscope",
                     "recipe": {
