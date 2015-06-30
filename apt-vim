@@ -44,17 +44,6 @@ class Dependency(PkgItem):
         # Convert python variable names to json variable names
         return {k.replace('_', '-'): v for k,v in self.__dict__.items()}
 
-    #def get_recipe(self):
-        #recipe = []
-        #if HOST_OS in self.recipe:
-            #recipe = self.recipe[HOST_OS]
-        #elif 'all' in self.recipe:
-            #recipe = self.recipe['all']
-        #if self.recipe and not recipe:
-            #if not report_fail('No recipe for your OS'):
-                #sys.exit(1)
-        #return recipe
-
     @staticmethod
     def dict_to_dep(d):
         return Dependency(d[NAME], d[RECIPE])
@@ -73,17 +62,6 @@ class VimPackage(PkgItem):
         deps = [ dep.to_dict() for dep in self.depends_on ]
         d[DPND] = deps
         return d
-
-    #def get_recipe(self):
-        #recipe = []
-        #if HOST_OS in self.recipe:
-            #recipe = self.recipe[HOST_OS]
-        #elif 'all' in self.recipe:
-            #recipe = self.recipe['all']
-        #if self.recipe and not recipe:
-            #if not report_fail('No recipe for your OS'):
-                #sys.exit(1)
-        #return recipe
 
     @staticmethod
     def dict_to_vimpkg(d):
@@ -261,6 +239,7 @@ def get_depend(pkg_name='this plugin'):
 def __get_depend(name):
     dep = Dependency(name)
     recipe = get_recipe()
+    # Only save the recipe if there is a recipe to save...
     if recipe:
         dep.recipe[HOST_OS] = recipe
     return dep
