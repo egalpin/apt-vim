@@ -15,6 +15,6 @@ Installation
 4. Clone this repo:  `git clone https://github.com/egalpin/apt-vim.git`
 5. Add `apt-vim` to you PATH for ease of use:  `cp apt-vim /usr/local/bin`
 6. Add `execute pathogen#infect()` and then `call pathogen#helptags()` to `~/.vimrc`
-  - If ~/.vimrc doesn't exist, create a new file containing just the above 2 commands
+  - If `~/.vimrc` doesn't exist, create a new file containing just the above 2 commands
 7. Run `apt-vim install -y`
   - This will clone and install [Pathogen](https://github.com/tpope/vim-pathogen) and, as an example, [Tagbar](https://github.com/majutsushi/tagbar) and its dependency, `ctags`
