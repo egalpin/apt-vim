@@ -62,7 +62,12 @@
                 "recipe": {
                     "all": [
                         "cd ~/.vim",
-                        "git clone https://github.com/flazz/vim-colorschemes.git"
+                        "mkdir colors",
+                        "cd colors",
+                        "git init",
+                        "git remote add origin https://github.com/flazz/vim-colorschemes.git",
+                        "git fetch", 
+                        "git checkout origin/master"
                     ]
                 }
             }
