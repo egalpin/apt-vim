@@ -56,6 +56,20 @@
                         "sudo make install"
                     ]
                 }
+            },
+            {
+                "name": "CSApprox",
+                "recipe": {
+                    "all": [],
+                    "linuix": [
+                        "curl -LSso ~/csapprox.zip http://www.vim.org/scripts/download_script.php?src_id=18594",
+                        "mkdir ~/.vim/bundle/CSApprox",
+                        "mv ~/csapprox.zip ~/.vim/bundle/CSApprox",
+                        "cd ~/.vim/bundle/CSApprox",
+                        "unzip csapprox.zip",
+                        "rm csapprox.zip"
+                    ]
+                }
             }
         ],
         "install-target": "~/.vimpkg/bundle"
