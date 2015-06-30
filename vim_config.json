@@ -17,7 +17,7 @@
             		],
             		"linux": []
             	}
-            }
+            },
             {
                 "name": "node",
                 "recipe": {
