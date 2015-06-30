@@ -340,6 +340,7 @@ def exe_shell_commands(commands=None):
 def init():
     if os.path.exists(VIM_ROOT_DIR):
         shutil.copytree(VIM_ROOT_DIR, os.path.join(os.path.expanduser('~'), '.vim.bak'))
+        shutil.rmtree(VIM_ROOT_DIR)
     os.makedirs(VIM_ROOT_DIR)
 
     if not os.path.exists(SCRIPT_ROOT_DIR):
