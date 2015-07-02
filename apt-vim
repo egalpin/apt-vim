@@ -117,6 +117,9 @@ def get_pkg_name(git_url):
     return pkg_name
 
 def add_pkg(pkg_name, git_url):
+    if not pkg_name:
+        report_fail('Each package must have a non-blank name.',
+                confirm_continue=False)
     vimpkg = VimPackage(pkg_url=git_url)
     vimpkg.name = pkg_name
     install_target = get_install_target()
