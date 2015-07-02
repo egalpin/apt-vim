@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json, sys, os, re, shutil, shlex, getopt, platform, stat
+import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
@@ -21,6 +21,7 @@ VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
 
 ####### CMD LINE FLAGS #######
 ASSUME_YES = False
+JSON_INPUT = False
 
 
 class PkgItem(object):
@@ -412,9 +413,26 @@ def get_urls_from_list(check_list):
 def get_installed_pkgs():
     return os.listdir(os.path.join(VIM_ROOT_DIR, 'bundle'))
 
+def get_vimpkg_from_json_input():
+    input_str = ''
+    line = raw_input().strip()
+    while line != "":
+        input_str += line
+        line = raw_input().strip()
+    try:
+        input_dict = ast.literal_eval(input_str)
+    except:
+        print 'Parse error. Please enter a valid JSON.'
+        sys.exit(1)
+    vimpkg = VimPackage.dict_to_vimpkg(input_dict)
+    return vimpkg
+
 def __handle_install(argv, options, pkg_ids):
-    global ASSUME_YES
-    if not argv or not pkg_ids:
+    if JSON_INPUT:
+        vimpkg = get_vimpkg_from_json_input()
+        save_vim_config(vimpkg, VIM_CONFIG_PATH)
+        install_pkg(vimpkg)
+    elif not argv or not pkg_ids:
         # No options and no git URL passed
         for pkg in [ p for p in VIM_CONFIG[PKGS] if  \
                 p[NAME] not in get_installed_pkgs() ]:
@@ -422,23 +440,28 @@ def __handle_install(argv, options, pkg_ids):
             if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
                 install_pkg(vimpkg)
         return
-    for git_url in pkg_ids:
-        vimpkg = get_vimpkg(git_url)
-        if not vimpkg:
-            pkg_name = get_pkg_name(git_url)
-            vimpkg = add_pkg(pkg_name, git_url)
-            save_vim_config(vimpkg, VIM_CONFIG_PATH)
-        install_pkg(vimpkg)
+    else:
+        for git_url in pkg_ids:
+            vimpkg = get_vimpkg(git_url)
+            if not vimpkg:
+                pkg_name = get_pkg_name(git_url)
+                vimpkg = add_pkg(pkg_name, git_url)
+                save_vim_config(vimpkg, VIM_CONFIG_PATH)
+            install_pkg(vimpkg)
 
 def __handle_add(argv, options, pkg_ids):
     install_target = get_install_target()
-    for git_url in pkg_ids:
-        pkg_name = get_pkg_name(git_url)
-        if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
-            if not add_overwrite(pkg_name, git_url):
-                continue
-        vimpkg = add_pkg(pkg_name, git_url)
+    if JSON_INPUT:
+        vimpkg = get_vimpkg_from_json_input()
         save_vim_config(vimpkg, VIM_CONFIG_PATH)
+    else:
+        for git_url in pkg_ids:
+            pkg_name = get_pkg_name(git_url)
+            if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
+                if not add_overwrite(pkg_name, git_url):
+                    continue
+            vimpkg = add_pkg(pkg_name, git_url)
+            save_vim_config(vimpkg, VIM_CONFIG_PATH)
 
 def __handle_remove(argv, options, pkg_ids):
     global ASSUME_YES
@@ -497,15 +520,18 @@ def process_cmd_args():
                     + str(missing_dependencies),
                     confirm_continue=False)
 
-        options, remainder = getopt.getopt(argv[1:], 'y', ['assume-yes'])
+        options, remainder = getopt.getopt(argv[1:], 'yj', ['assume-yes', 'json'])
         for opt,arg in options:
-            if opt in ('-y, --assume-yes'):
+            if opt in ('-y', '--assume-yes'):
                 global ASSUME_YES
                 ASSUME_YES = True
+            if opt in ('-j', '--json'):
+                global JSON_INPUT
+                JSON_INPUT = True
         MODES[mode](argv[1:], options, remainder)
 
 def usage():
-    print 'Valid modes: ', str(MODES.keys().sort()), '\n'
+    print 'Valid modes: ', str(MODES.keys()), '\n'
 
 def main():
     process_cmd_args()
