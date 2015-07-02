@@ -28,7 +28,7 @@ In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  init, ins
 
 The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins that you use. For a simple example, take a look at [vim_config.json](vim_config.json) in this repo. For an advanced example, look  [here](https://github.com/egalpin/vim_settings/blob/master/vim_config.json).
 
-__Options__
+####Options
   - -y, --assume-yes
   - -j, --json
 
@@ -70,22 +70,19 @@ apt-vim install -jy
 ```
 
 
-__Init__
-
+####init
 `apt-vim init`
 
 This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
 
-__Add__
-
+####add
 `apt-vim add [options] URLs`
 
 Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings.
 
 URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
 
-__Install__
-
+####Install
 `apt-vim install [options] [URLs]`
 Allows you to add a plugin and its configuration to your `vim_config.json` file, _with_ installation. This will install any declared dependencies, clone the specified URL, and run any post-install commands.
 
@@ -97,15 +94,13 @@ Using the `--json` option allows you to add/install an entire configuration for 
 
 URLs:  URLs of Git repositories separated by whitespace
 
-__Remove__
-
+####Remove
 `apt-vim remove [options] [URLs]`
 Removes a plugin and all of its dependencies. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `node`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
 
 URLs:  URLs of Git repositories separated by whitespace
 
-__Update__
-
+####Update
 `apt-vim update [options] [URLs]`
 Update first removes a plugin, then re-clones and re-executes the configuration for that plugin.
 
