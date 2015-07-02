@@ -390,6 +390,9 @@ def first_run():
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
+    os.environ['PATH'] += os.pathsep + os.path.abspath(BIN_DIR)
+    if not call_silent(['sudo', 'cp', os.path.realpath(__file__), '/usr/local/bin']:
+        report_fail('Failed to copy `apt-vim` to `/usr/local/bin`', confirm_continue=False)
 
 def init():
     load_vim_config()
