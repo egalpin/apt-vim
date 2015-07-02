@@ -117,6 +117,9 @@ def get_pkg_name(git_url):
     return pkg_name
 
 def add_pkg(pkg_name, git_url):
+    if not pkg_name:
+        report_fail('Each package must have a non-blank name.',
+                confirm_continue=False)
     vimpkg = VimPackage(pkg_url=git_url)
     vimpkg.name = pkg_name
     install_target = get_install_target()
@@ -390,8 +393,23 @@ def first_run():
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
+    if not call_silent(['sudo', 'cp', os.path.realpath(__file__), '/usr/local/bin']):
+        report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
+            'Please ensure that `apt-vim` is in your PATH',
+            confirm_continue=False)
+    print 'Completed successfully'
+    print 'Please ensure that ' + os.path.abspath(BIN_DIR) + ' is in your PATH'
+    sys.exit(0)
+
+def verify_bin_in_path():
+    if '.vimpkg/bin' not in os.environ['PATH']:
+        msg = 'FAILED!\n' + os.path.abspath(BIN_DIR) + ' not found in PATH' + \
+            '\n\nPlease ensure that ' + os.path.abspath(BIN_DIR) + \
+            ' is in your PATH'
+        report_fail(msg, confirm_continue=False)
 
 def init():
+    verify_bin_in_path()
     load_vim_config()
     missing_deps = []
     deps = VIM_CONFIG[GBL][DPND]
@@ -500,19 +518,19 @@ def __handle_update(argv, options, pkg_ids):
                 print 'Skipped updating package `' + pkg_name +'`'
 
 
-MODES = { 'install': __handle_install, 'remove': __handle_remove, \
+MODES = { 'init': first_run, 'install': __handle_install, 'remove': __handle_remove, \
         'update': __handle_update, 'add': __handle_add }
 
 def process_cmd_args():
     argv = sys.argv[1:]
     mode = argv[0].lower()
     if mode not in MODES:
-        if mode == 'init':
-            first_run()
-            return
         usage()
         sys.exit(1)
     else:
+        if mode == 'init':
+            MODES[mode]()
+            return
         missing_dependencies = init()
         if missing_dependencies:
             report_fail('Cannot proceed. Missing the following dependencies that could' \
