@@ -26,14 +26,17 @@ JSON_INPUT = False
 
 class PkgItem(object):
     def get_recipe(self):
-        recipe = []
+        recipe = None
         if HOST_OS in self.recipe:
             recipe = self.recipe[HOST_OS]
         elif 'all' in self.recipe:
             recipe = self.recipe['all']
-        if self.recipe and HOST_OS not in self.recipe and not recipe:
+        if self.recipe and HOST_OS not in self.recipe and recipe != None:
             report_fail('No recipe for `' + self.name + '` for your OS')
+        if recipe == None:
+            recipe = []
         return recipe
+
 
 class Dependency(PkgItem):
     def __init__(self, name='dep', recipe={}):
