@@ -400,9 +400,10 @@ def first_run():
 
 def verify_bin_in_path():
     if '.vimpkg/bin' not in os.environ['PATH']:
-        report_fail('Please ensure that ' + os.path.abspath(BIN_DIR) + \
-            ' is in your PATH',
-            confirm_continue=False)
+        msg = 'FAILED!\n' + os.path.abspath(BIN_DIR) + \ ' not found in PATH' +\
+            '\n\nPlease ensure that ' + os.path.abspath(BIN_DIR) + \
+            ' is in your PATH'
+        report_fail(msg, confirm_continue=False)
 
 def init():
     verify_bin_in_path()
