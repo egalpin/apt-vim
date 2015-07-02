@@ -100,7 +100,7 @@ def install_pkg(vimpkg):
     # Install dependencies of package
     install_dependencies(vimpkg)
     # Clone the plugin and run any post-install commands
-    recipe = vimpkg.recipe
+    recipe = vimpkg.get_recipe()
     __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, recipe)
     # Change back to the DIR containing this script
     os.chdir(SCRIPT_ROOT_DIR)
