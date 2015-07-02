@@ -419,8 +419,7 @@ def init():
     for dep in deps:
         dep = Dependency.dict_to_dep(dep)
         if not check_requirements([dep.name]):
-            if (HOST_OS not in dep.recipe and not dep.get_recipe()) or  \
-                    not exe_shell_commands(dep.get_recipe()):
+            if not exe_shell_commands(dep.get_recipe()):
                 missing_deps.append(dep.name)
     return missing_deps
 
