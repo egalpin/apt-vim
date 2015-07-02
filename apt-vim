@@ -518,19 +518,19 @@ def __handle_update(argv, options, pkg_ids):
                 print 'Skipped updating package `' + pkg_name +'`'
 
 
-MODES = { 'install': __handle_install, 'remove': __handle_remove, \
+MODES = { 'init': first_run, 'install': __handle_install, 'remove': __handle_remove, \
         'update': __handle_update, 'add': __handle_add }
 
 def process_cmd_args():
     argv = sys.argv[1:]
     mode = argv[0].lower()
     if mode not in MODES:
-        if mode == 'init':
-            first_run()
-            return
         usage()
         sys.exit(1)
     else:
+        if mode == 'init':
+            MODES[mode]()
+            return
         missing_dependencies = init()
         if missing_dependencies:
             report_fail('Cannot proceed. Missing the following dependencies that could' \
