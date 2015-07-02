@@ -13,12 +13,13 @@ Installation
 2. Install Git
 3. Install python 2.7.x
 4. Clone this repo:  `git clone https://github.com/egalpin/apt-vim.git`
-5. Add `apt-vim` to you `PATH` for ease of use:  `sudo cp apt-vim /usr/local/bin`
-6. Add `execute pathogen#infect()` and then `call pathogen#helptags()` to `~/.vimrc`
+5. Change to the cloned directory
+  - `cd apt-vim`
+5. Run `./apt-vim init`
+6. Add `~/.vimpkg/bin` to your `PATH`
+  - This can be done by adding `export PATH=$PATH:~/.vimpkg/bin` to `~/.bashrc` or `~/.bash_profile` or equivalent shell configuration file
+  - `~/.vimpkg/bin` is where all Vim plugin dependencies will be installed
+7. Add `execute pathogen#infect()` and then `call pathogen#helptags()` to `~/.vimrc`
   - If `~/.vimrc` doesn't exist, create a new file containing just the above 2 commands
-7. Run `apt-vim init`
-8. Add `~/.vimpkg/bin` to your `PATH`
-  - `export PATH=$PATH:~/.vimpkg/bin`
-  - This is where all Vim plugin dependencies will be installed
-9. Run `apt-vim install -y`
+8. Run `apt-vim install -y`
   - This will clone and install [Pathogen](https://github.com/tpope/vim-pathogen) and, as an example, [Tagbar](https://github.com/majutsushi/tagbar) and its dependency, `ctags`
