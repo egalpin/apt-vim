@@ -31,7 +31,7 @@ class PkgItem(object):
             recipe = self.recipe[HOST_OS]
         elif 'all' in self.recipe:
             recipe = self.recipe['all']
-        if self.recipe and HOST_OS not in self.recipe and recipe is not None:
+        if self.recipe and HOST_OS not in self.recipe and recipe is None:
             report_fail('No recipe for `' + self.name + '` for your OS')
         if recipe == None:
             recipe = []
