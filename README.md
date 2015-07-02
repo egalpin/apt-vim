@@ -76,32 +76,25 @@ apt-vim install -jy
 This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
 
 ####add
-`apt-vim add [options] URLs`
+`apt-vim add [options] URLs`  URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
 
-Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings.
+Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings. 
 
-URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
+####install
+`apt-vim install [options] [URLs]`  URLs:  URLs of Git repositories separated by whitespace
 
-####Install
-`apt-vim install [options] [URLs]`
-Allows you to add a plugin and its configuration to your `vim_config.json` file, _with_ installation. This will install any declared dependencies, clone the specified URL, and run any post-install commands.
-
-If a configuration already exists in `vim_config.json` for a specified URL, that configuration will be used. To edit the configuration for a given plugin, directly edit the file `~/.vimpkg/vim_config.json` or `remove` and then `install`.
+Allows you to add a plugin and its configuration to your `vim_config.json` file, _with_ installation. This will install any declared dependencies, clone the specified URL, and run any post-install commands. If a configuration already exists in `vim_config.json` for a specified URL, that configuration will be used. To edit the configuration for a given plugin, directly edit the file `~/.vimpkg/vim_config.json` or `remove` and then `install`.
 
 If no URLs are provided, you will be walked through installing any plugins in `vim_config.json` that are not already installed. You will be prompted with a choice of whether or not to install each package. Use `--assume-yes` to select all packages in `vim_config.json`.
 
 Using the `--json` option allows you to add/install an entire configuration for a plugin. This is useful for installing a new plugin to your Vim setup that someone has created a configuration for. See above for an example.
 
-URLs:  URLs of Git repositories separated by whitespace
+####remove
+`apt-vim remove [options] [URLs]` URLs:  URLs of Git repositories separated by whitespace
 
-####Remove
-`apt-vim remove [options] [URLs]`
 Removes a plugin and all of its dependencies. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `node`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
 
-URLs:  URLs of Git repositories separated by whitespace
+####update
+`apt-vim update [options] [URLs]` URLs:  URLs of Git repositories separated by whitespace
 
-####Update
-`apt-vim update [options] [URLs]`
 Update first removes a plugin, then re-clones and re-executes the configuration for that plugin.
-
-URLs:  URLs of Git repositories separated by whitespace
