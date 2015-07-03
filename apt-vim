@@ -447,6 +447,12 @@ def get_vimpkg_from_json_input():
     vimpkg = VimPackage.dict_to_vimpkg(input_dict)
     return vimpkg
 
+def check_unique_pkg_name(pkg_name):
+    if pkg_name in [ p[NAME] for p in VIM_CONFIG[PKGS] ]:
+        report_fail('FAILED!\nEach package must have a unique name. ' +
+                'A package with name `' + pkg_name + '` already exists.',
+                confirm_continue=False)
+
 def __handle_install(argv, options, pkg_ids):
     if JSON_INPUT:
         vimpkg = get_vimpkg_from_json_input()
@@ -465,6 +471,7 @@ def __handle_install(argv, options, pkg_ids):
             vimpkg = get_vimpkg(git_url)
             if not vimpkg:
                 pkg_name = get_pkg_name(git_url)
+                check_unique_pkg_name(pkg_name)
                 vimpkg = add_pkg(pkg_name, git_url)
                 save_vim_config(vimpkg, VIM_CONFIG_PATH)
             install_pkg(vimpkg)
@@ -480,6 +487,7 @@ def __handle_add(argv, options, pkg_ids):
             if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
                 if not add_overwrite(pkg_name, git_url):
                     continue
+            check_unique_pkg_name(pkg_name)
             vimpkg = add_pkg(pkg_name, git_url)
             save_vim_config(vimpkg, VIM_CONFIG_PATH)
 
