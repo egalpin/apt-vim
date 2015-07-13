@@ -222,8 +222,9 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
             return True
     sys.exit(1)
 
+
 def print_packages():
-    installed = get_installed_pkgs()
+    installed = sorted(get_installed_pkgs(), key=lambda s: s.lower())
     available = [ [p[NAME], p[PKG_URL]] for p in VIM_CONFIG[PKGS] if p[NAME] not in installed ]
     print 'Installed packages: '
     for pkg in installed:
@@ -231,7 +232,7 @@ def print_packages():
     if available:
         print '\nAvailable packages (install with `apt-vim install -y <URL>`): '
         print '\tName\tURL'
-        for pkg in available:
+        for pkg in sorted(available, key=lambda s: s.lower()):
             print '\t' + pkg[0]
     print
 
@@ -546,10 +547,11 @@ MODES = { 'init': first_run, 'install': __handle_install, 'remove': __handle_rem
 
 def process_cmd_args():
     argv = sys.argv[1:]
+    if not argv:
+        usage()
     mode = argv[0].lower()
     if mode not in MODES:
         usage()
-        sys.exit(1)
     else:
         if mode == 'init':
             MODES[mode]()
@@ -576,7 +578,8 @@ def process_cmd_args():
         MODES[mode](argv[1:], options, remainder)
 
 def usage():
-    print 'Valid modes: ', str(MODES.keys()), '\n'
+    print 'Valid modes: ', str(sorted(MODES.keys(), key=lambda s: s.lower())), '\n'
+    sys.exit(1)
 
 def main():
     process_cmd_args()
