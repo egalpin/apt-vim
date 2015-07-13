@@ -222,8 +222,9 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
             return True
     sys.exit(1)
 
+
 def print_packages():
-    installed = sorted(get_installed_pkgs())
+    installed = sorted(get_installed_pkgs(), key=lambda s: s.lower())
     available = [ [p[NAME], p[PKG_URL]] for p in VIM_CONFIG[PKGS] if p[NAME] not in installed ]
     print 'Installed packages: '
     for pkg in installed:
@@ -231,7 +232,7 @@ def print_packages():
     if available:
         print '\nAvailable packages (install with `apt-vim install -y <URL>`): '
         print '\tName\tURL'
-        for pkg in sorted(available):
+        for pkg in sorted(available, key=lambda s: s.lower()):
             print '\t' + pkg[0]
     print
 
