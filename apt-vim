@@ -222,6 +222,19 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
             return True
     sys.exit(1)
 
+def print_packages():
+    installed = get_installed_pkgs()
+    available = [ [p[NAME], p[PKG_URL]] for p in VIM_CONFIG[PKGS] if p[NAME] not in installed ]
+    print 'Installed packages: '
+    for pkg in installed:
+        print '\t' + pkg
+    if available:
+        print '\nAvailable packages (install with `apt-vim install -y <URL>`): '
+        print '\tName\tURL'
+        for pkg in available:
+            print '\t' + pkg[0]
+    print
+
 def add_overwrite(pkg_name, git_url):
     if user_confirm('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
         vimpkg = get_vimpkg(git_url)
@@ -529,7 +542,7 @@ def __handle_update(argv, options, pkg_ids):
 
 
 MODES = { 'init': first_run, 'install': __handle_install, 'remove': __handle_remove, \
-        'update': __handle_update, 'add': __handle_add }
+        'update': __handle_update, 'add': __handle_add, 'list': print_packages}
 
 def process_cmd_args():
     argv = sys.argv[1:]
@@ -538,7 +551,7 @@ def process_cmd_args():
         usage()
         sys.exit(1)
     else:
-        if mode == 'init':
+        if mode in ['init', 'list']:
             MODES[mode]()
             return
         missing_dependencies = init()
