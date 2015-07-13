@@ -18,6 +18,8 @@ VIM_CONFIG = None
 OS = 'os'
 HOST_OS = platform.system().lower()
 VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
+CWD = os.getcwd()
+PKG_IDENTIFIER = '@vimpkg'
 
 ####### CMD LINE FLAGS #######
 ASSUME_YES = False
@@ -93,6 +95,42 @@ def get_vimpkg(pkg_id):
     if pkg_by_name:
         return VimPackage.dict_to_vimpkg(pkg_by_name[0])
     return None
+
+def find_files_with_type(file_extension, path=os.getcwd()):
+    file_extension = file_extension.lower()
+    result_files = []
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            f = os.path.join(root, f)
+            if os.path.isfile(f):
+                file_ext = os.path.splitext(f)[1]
+                if file_ext.lower() in [file_extension, '.' + file_extension]:
+                    result_files.append(os.path.abspath(f))
+    return result_files
+
+def get_vimpkg_from_local_json(filenames=None):
+    pkgs = []
+    if filenames is None:
+        filenames = find_files_with_type('json')
+
+    for filename in filenames:
+        with open(filename, 'r') as f:
+            check = f.readline().strip()
+            if check != PKG_IDENTIFIER:
+                continue
+            json = f.read()
+        if json[0] != '[':
+            json = '[' + json
+        if json[len(json)-1] != ']':
+            json = json + ']'
+        try:
+            input_dict = ast.literal_eval(json)
+        except:
+            print 'Parse error. Please enter a valid JSON.'
+            sys.exit(1)
+        for pkg in input_dict:
+            pkgs.append(VimPackage.dict_to_vimpkg(pkg))
+    return pkgs
 
 def status_update(pkg_name):
     print '\nCloning, configuring, and installing `' + pkg_name + '`'
@@ -331,7 +369,7 @@ def save_vim_config(vimpkg=None, file_path=None):
         with open(file_path, 'w') as f:
             json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
     except:
-        report_fail('failed to write ' + file_path, confirm_continue=False)
+        report_fail('Failed to write ' + file_path, confirm_continue=False)
 
 def get_pkg_name_from_url(git_url):
     pkg_regex = re.compile(r'.*\/([^\/]+).git$')
@@ -474,8 +512,9 @@ def __handle_install(argv, options, pkg_ids):
         install_pkg(vimpkg)
     elif not argv or not pkg_ids:
         # No options and no git URL passed
-        for pkg in [ p for p in VIM_CONFIG[PKGS] if  \
-                p[NAME] not in get_installed_pkgs() ]:
+        pkgs = [ p for p in VIM_CONFIG[PKGS] if  p[NAME] not in get_installed_pkgs() ]
+        pkgs.extend(get_vimpkg_from_local_json())
+        for pkg in pkgs:
             vimpkg = VimPackage.dict_to_vimpkg(pkg)
             if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
                 install_pkg(vimpkg)
@@ -495,13 +534,23 @@ def __handle_add(argv, options, pkg_ids):
     if JSON_INPUT:
         vimpkg = get_vimpkg_from_json_input()
         save_vim_config(vimpkg, VIM_CONFIG_PATH)
-    else:
-        for git_url in pkg_ids:
-            pkg_name = get_pkg_name(git_url)
+    elif not pkg_ids:
+        for pkg in get_vimpkg_from_local_json():
+            vimpkg = VimPackage.dict_to_vimpkg(pkg)
+            pkg_name = vimpkg.name
+            check_unique_pkg_name(pkg_name)
+            git_url = vimpkg.pkg_url
             if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
                 if not add_overwrite(pkg_name, git_url):
                     continue
+            save_vim_config(vimpkg, VIM_CONFIG_PATH)
+    else:
+        for git_url in pkg_ids:
+            pkg_name = get_pkg_name(git_url)
             check_unique_pkg_name(pkg_name)
+            if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
+                if not add_overwrite(pkg_name, git_url):
+                    continue
             vimpkg = add_pkg(pkg_name, git_url)
             save_vim_config(vimpkg, VIM_CONFIG_PATH)
 
