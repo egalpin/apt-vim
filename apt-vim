@@ -551,10 +551,14 @@ def process_cmd_args():
         usage()
         sys.exit(1)
     else:
-        if mode in ['init', 'list']:
+        if mode == 'init':
             MODES[mode]()
             return
+
         missing_dependencies = init()
+        if mode == 'list':
+            MODES[mode]()
+            sys.exit(0)
         if missing_dependencies:
             report_fail('Cannot proceed. Missing the following dependencies that could' \
                     + ' not be automatically insatlled:\n' \
