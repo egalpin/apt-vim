@@ -237,7 +237,7 @@ def find_executable(path, filename):
 
 def user_confirm(msg=None):
     if ASSUME_YES:
-        return true
+        return True
 
     if msg is None:
         msg = 'Do you wish to continue anyways?'
