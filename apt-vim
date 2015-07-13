@@ -236,6 +236,9 @@ def find_executable(path, filename):
     return None
 
 def user_confirm(msg=None):
+    if ASSUME_YES:
+        return true
+
     if msg is None:
         msg = 'Do you wish to continue anyways?'
     msg += ' [y|N]:  '
@@ -513,10 +516,20 @@ def __handle_install(argv, options, pkg_ids):
     elif not argv or not pkg_ids:
         # No options and no git URL passed
         pkgs = [ p for p in VIM_CONFIG[PKGS] if  p[NAME] not in get_installed_pkgs() ]
-        pkgs.extend(get_pkg_from_local_json())
+        local_pkgs = get_pkg_from_local_json()
         for pkg in pkgs:
             vimpkg = VimPackage.dict_to_vimpkg(pkg)
             if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
+                install_pkg(vimpkg)
+        for pkg in local_pkgs:
+            vimpkg = VimPackage.dict_to_vimpkg(pkg)
+            if get_vimpkg(vimpkg.pkg_url):
+                # Pkg is already installed
+                if not add_overwrite(vimpkg.name, vimpkg.pkg_url):
+                    continue
+            if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
+                check_unique_pkg_name(vimpkg.name)
+                save_vim_config(vimpkg, VIM_CONFIG_PATH)
                 install_pkg(vimpkg)
         return
     else:
@@ -561,6 +574,9 @@ def __handle_remove(argv, options, pkg_ids):
         report_fail('No package URL specified. Exiting', confirm_continue=False)
     for git_url in pkg_ids:
         vimpkg = get_vimpkg(git_url)
+        if not vimpkg:
+            report_fail('No package with ID `' + git_url + '`')
+            continue
         pkg_name = vimpkg.name
         msg = 'Confirm remove package `' + pkg_name + '`'
         if ASSUME_YES or user_confirm(msg):
