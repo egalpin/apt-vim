@@ -3,10 +3,13 @@ import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
-SCRIPT_ROOT_DIR = os.path.join(os.path.expanduser("~"), '.vimpkg')
-VIM_ROOT_DIR = os.path.join(os.path.expanduser("~"), '.vim')
+HOME = os.path.expanduser("~")
+SCRIPT_ROOT_DIR = os.path.join(HOME, '.vimpkg')
+VIM_ROOT_DIR = os.path.join(HOME, '.vim')
+BUNDLE_PATH = os.path.join(VIM_ROOT_DIR, '.vim/bundle')
 SRC_DIR = os.path.join(SCRIPT_ROOT_DIR, 'src')
 BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
+VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
 GBL = 'global'
 DPND = 'depends-on'
 NAME = 'name'
@@ -17,7 +20,6 @@ RECIPE = 'recipe'
 VIM_CONFIG = None
 OS = 'os'
 HOST_OS = platform.system().lower()
-VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
 CWD = os.getcwd()
 PKG_IDENTIFIER = '@vimpkg'
 
@@ -81,7 +83,7 @@ def load_vim_config(file_path=VIM_CONFIG_PATH):
 
 def get_install_target():
     path = VIM_CONFIG[GBL][TRG_DIR]
-    path = path.replace('~', os.path.expanduser('~'))
+    path = path.replace('~', HOME)
     return path
 
 def get_global_requirements():
@@ -189,6 +191,28 @@ def clone_pkg(git_url, pkg_name=None):
         pkg_name = get_pkg_name_from_url(git_url)
     if pkg_name and not call_silent(['git', 'clone', git_url, pkg_name]):
         report_fail('Failed to clone `' + pkg_name + '`')
+
+def rename_pkg(old_name, new_name):
+    if old_name == new_name:
+        return
+    if not check_unique_pkg_name(new_name):
+        report_fail('Must provide new, unique package name',
+                    confirm_continue=False)
+    with open(VIM_CONFIG_PATH, 'r') as f:
+        content = f.read()
+    replaced_content = content.replace(old_name, new_name)
+    with open(VIM_CONFIG_PATH, 'w') as f:
+        f.write(replaced_content)
+    # Move the cloned vim plugin
+    old_dir = os.path.join(BUNDLE_PATH, old_name)
+    if os.path.exists(old_dir):
+        new_dir = os.path.join(BUNDLE_PATH, new_name)
+        shutil.move(old_dir, new_dir)
+    # Move any source files corresponding to the vim plugin
+    old_dir = os.path.join(SRC_DIR, old_name)
+    if os.path.exists(old_dir):
+        new_dir = os.path.join(SRC_DIR, new_name)
+        shutil.move(old_dir, new_dir)
 
 def __install_pkg(pkg_name, git_url, install_target, commands=[]):
     # Change to directory with vim plugins
@@ -417,7 +441,7 @@ def exe_shell_commands(commands=None):
     if commands is None:
         commands = []
     for com in commands:
-        com = com.replace('~', os.path.expanduser("~"))
+        com = com.replace('~', HOME)
         try:
             if 'cd' in com:
                 os.chdir(shlex.split(com)[1])
@@ -429,8 +453,7 @@ def exe_shell_commands(commands=None):
 
 def first_run():
     if os.path.exists(VIM_ROOT_DIR):
-        shutil.copytree(VIM_ROOT_DIR, os.path.join(os.path.expanduser('~'), '.vim.bak'))
-        shutil.rmtree(VIM_ROOT_DIR)
+        shutil.move(VIM_ROOT_DIR, os.path.join(HOME, '.vim.bak'))
     os.makedirs(VIM_ROOT_DIR)
 
     if not os.path.exists(SCRIPT_ROOT_DIR):
@@ -439,14 +462,13 @@ def first_run():
     shutil.copy('vim_config.json', VIM_CONFIG_PATH)
     load_vim_config()
 
-    bundle_path = os.path.join(os.path.expanduser("~"), '.vim/bundle')
-    if os.path.lexists(bundle_path):
-        dest_path = bundle_path + '.bak'
-        shutil.move(bundle_path, dest_path)
+    if os.path.lexists(BUNDLE_PATH):
+        dest_path = BUNDLE_PATH + '.bak'
+        shutil.move(BUNDLE_PATH, dest_path)
     install_target = get_install_target()
     if not os.path.exists(install_target):
         os.makedirs(install_target)
-    os.symlink(install_target, bundle_path)
+    os.symlink(install_target, BUNDLE_PATH)
     if not os.path.exists(BIN_DIR):
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
@@ -531,7 +553,6 @@ def __handle_install(argv, options, pkg_ids):
                 check_unique_pkg_name(vimpkg.name)
                 save_vim_config(vimpkg, VIM_CONFIG_PATH)
                 install_pkg(vimpkg)
-        return
     else:
         for git_url in pkg_ids:
             vimpkg = get_vimpkg(git_url)
