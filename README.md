@@ -24,7 +24,7 @@ Plugin installation recipes can be saved and shared, allowing users to create po
 
 
 #Usage
-In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  init, install, add, remove, update
+In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  __'add', 'init', 'install', 'list', 'remove', 'update'__
 
 The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins that you use. For a simple example, take a look at [vim_config.json](vim_config.json) in this repo. For an advanced example, look  [here](https://github.com/egalpin/vim_settings/blob/master/vim_config.json).
 
@@ -74,6 +74,13 @@ apt-vim install -jy
 `apt-vim init`
 
 This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
+
+####list
+`apt-vim list`
+
+Displays a list of packages you have _actually_ installed, and a list of packages that are in your `~/.vimpkg/vim_config.json` file but _not yet installed_. 
+
+__Note__: This is not an exhaustive list of all of the plugins that can be installed using `apt-vim`. Any plugin on GitHub (or other Git repository that you have access to) can be installed using `apt-vim` by supplying the corresponding URL.
 
 ####add
 `apt-vim add [options] URLs`  URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
