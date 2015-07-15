@@ -112,9 +112,8 @@ def find_files_with_type(file_extension, path=os.getcwd()):
     return result_files
 
 def get_pkg_from_local_json(filenames=None):
-    pkgs = []
     if filenames is None:
-        filenames = find_files_with_type('json')
+        filenames = find_files_with_type('json', os.getcwd())
 
     for filename in filenames:
         with open(filename, 'r') as f:
@@ -122,18 +121,12 @@ def get_pkg_from_local_json(filenames=None):
             if check != PKG_IDENTIFIER:
                 continue
             json = f.read()
-        if json[0] != '[':
-            json = '[' + json
-        if json[len(json)-1] != ']':
-            json = json + ']'
         try:
-            input_dict = ast.literal_eval(json)
+            pkg = ast.literal_eval(json)
+            return pkg
         except:
             print 'Parse error. Please enter a valid JSON.'
             sys.exit(1)
-        for pkg in input_dict:
-            pkgs.append(pkg)
-    return pkgs
 
 def status_update(pkg_name):
     print '\nCloning, configuring, and installing `' + pkg_name + '`'
@@ -143,7 +136,7 @@ def install_pkg(vimpkg, skip_clone=False):
     # Clone the plugin and run any post-install commands
     if not skip_clone:
         clone_pkg(vimpkg.pkg_url, vimpkg.name)
-    if not exe_shell_commands(vimpkg.recipe):
+    if not exe_shell_commands(vimpkg.get_recipe()):
         report_fail('Failed to intall ' + vimpkg.name)
     # Install dependencies of package
     install_dependencies(vimpkg)
@@ -195,6 +188,7 @@ def clone_pkg(git_url, pkg_name=None):
             report_fail('Failed to clone `' + pkg_name + '`')
     if pkg_name and not os.path.exists(pkg_name):
         os.makedirs(pkg_name)
+    if os.path.exists(pkg_name):
         os.chdir(pkg_name)
 
 def rename_pkg(old_name, new_name):
@@ -658,3 +652,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    sys.exit(0)
