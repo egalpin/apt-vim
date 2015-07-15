@@ -448,13 +448,14 @@ def first_run():
     # Copy the config file to ~/.vimpkg/vim_config.json
     shutil.copy('vim_config.json', VIM_CONFIG_PATH)
     load_vim_config()
+    install_target = get_install_target()
 
     if os.path.lexists(BUNDLE_PATH):
         dest_path = BUNDLE_PATH + '.bak'
         shutil.move(BUNDLE_PATH, dest_path)
-    if not os.path.exists(INSTALL_TARGET):
-        os.makedirs(INSTALL_TARGET)
-    os.symlink(INSTALL_TARGET, BUNDLE_PATH)
+    if not os.path.exists(install_target):
+        os.makedirs(install_target)
+    os.symlink(install_target, BUNDLE_PATH)
     if not os.path.exists(BIN_DIR):
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
