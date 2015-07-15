@@ -22,6 +22,7 @@ OS = 'os'
 HOST_OS = platform.system().lower()
 CWD = os.getcwd()
 PKG_IDENTIFIER = '@vimpkg'
+INSTALL_TARGET = ''
 
 ####### CMD LINE FLAGS #######
 ASSUME_YES = False
@@ -137,14 +138,15 @@ def get_pkg_from_local_json(filenames=None):
 def status_update(pkg_name):
     print '\nCloning, configuring, and installing `' + pkg_name + '`'
 
-def install_pkg(vimpkg):
+def install_pkg(vimpkg, skip_clone=False):
     status_update(vimpkg.name)
-    install_target = get_install_target()
+    # Clone the plugin and run any post-install commands
+    if not skip_clone:
+        clone_pkg(vimpkg.pkg_url, vimpkg.name)
+    if not exe_shell_commands(vimpkg.recipe):
+        report_fail('Failed to intall ' + vimpkg.name)
     # Install dependencies of package
     install_dependencies(vimpkg)
-    # Clone the plugin and run any post-install commands
-    recipe = vimpkg.get_recipe()
-    __install_pkg(vimpkg.name, vimpkg.pkg_url, install_target, recipe)
     # Change back to the DIR containing this script
     os.chdir(SCRIPT_ROOT_DIR)
 
@@ -159,15 +161,14 @@ def get_pkg_name(git_url):
         pkg_name = get_pkg_name_from_url(git_url)
     return pkg_name
 
-def add_pkg(pkg_name, git_url):
+def add_new_pkg(pkg_name, git_url):
     if not pkg_name:
         report_fail('Each package must have a non-blank name.',
                 confirm_continue=False)
     vimpkg = VimPackage(pkg_url=git_url)
     vimpkg.name = pkg_name
-    install_target = get_install_target()
 
-    if os.path.exists(os.path.join(install_target, pkg_name)): # or \
+    if os.path.exists(os.path.join(INSTALL_TARGET, pkg_name)): # or \
         print 'Skipping installed package `' + pkg_name + '`'
         print 'To re-install `' + pkg_name + '` run:' \
                 + '\n\t`apt-vim remove ' + pkg_name + '`' \
@@ -185,12 +186,16 @@ def add_pkg(pkg_name, git_url):
     return vimpkg
 
 def clone_pkg(git_url, pkg_name=None):
-    if not git_url:
-        return
-    if not pkg_name:
-        pkg_name = get_pkg_name_from_url(git_url)
-    if pkg_name and not call_silent(['git', 'clone', git_url, pkg_name]):
-        report_fail('Failed to clone `' + pkg_name + '`')
+    # Change to directory with vim plugins
+    os.chdir(INSTALL_TARGET)
+    if git_url:
+        if not pkg_name:
+            pkg_name = get_pkg_name_from_url(git_url)
+        if pkg_name and not call_silent(['git', 'clone', git_url, pkg_name]):
+            report_fail('Failed to clone `' + pkg_name + '`')
+    if pkg_name and not os.path.exists(pkg_name):
+        os.makedirs(pkg_name)
+        os.chdir(pkg_name)
 
 def rename_pkg(old_name, new_name):
     if old_name == new_name:
@@ -213,16 +218,6 @@ def rename_pkg(old_name, new_name):
     if os.path.exists(old_dir):
         new_dir = os.path.join(SRC_DIR, new_name)
         shutil.move(old_dir, new_dir)
-
-def __install_pkg(pkg_name, git_url, install_target, commands=[]):
-    # Change to directory with vim plugins
-    os.chdir(install_target)
-    clone_pkg(git_url, pkg_name)
-    if not os.path.exists(pkg_name):
-        os.makedirs(pkg_name)
-    os.chdir(pkg_name)
-    if not exe_shell_commands(commands):
-        report_fail('Failed to intall ' + pkg_name)
 
 def install_dependencies(vimpkg):
     pkg_name = vimpkg.name
@@ -341,7 +336,7 @@ def remove_pkg_ref(vimpkg):
     return [ p for p in VIM_CONFIG[PKGS] if vimpkg.name not in p[NAME] ]
 
 def remove_pkg_plugin(vimpkg):
-    dir = os.path.join(get_install_target(), vimpkg.name)
+    dir = os.path.join(INSTALL_TARGET, vimpkg.name)
     remove_dir(dir)
 
 def get_depend(pkg_name='this plugin'):
@@ -385,7 +380,7 @@ def __get_recipe():
 
 def save_vim_config(vimpkg=None, file_path=None):
     if file_path is None:
-        file_path = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
+        file_path = VIM_CONFIG_PATH
     try:
         with open(file_path) as f:
             data = json.load(f)
@@ -465,10 +460,9 @@ def first_run():
     if os.path.lexists(BUNDLE_PATH):
         dest_path = BUNDLE_PATH + '.bak'
         shutil.move(BUNDLE_PATH, dest_path)
-    install_target = get_install_target()
-    if not os.path.exists(install_target):
-        os.makedirs(install_target)
-    os.symlink(install_target, BUNDLE_PATH)
+    if not os.path.exists(INSTALL_TARGET):
+        os.makedirs(INSTALL_TARGET)
+    os.symlink(INSTALL_TARGET, BUNDLE_PATH)
     if not os.path.exists(BIN_DIR):
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
@@ -491,6 +485,8 @@ def verify_bin_in_path():
 def init():
     verify_bin_in_path()
     load_vim_config()
+    global INSTALL_TARGET
+    INSTALL_TARGET = get_install_target()
     missing_deps = []
     deps = VIM_CONFIG[GBL][DPND]
     for dep in deps:
@@ -530,54 +526,44 @@ def check_unique_pkg_name(pkg_name):
                 'A package with name `' + pkg_name + '` already exists.',
                 confirm_continue=False)
 
-def __handle_install(argv, options, pkg_ids):
+def handle_install(argv, options, pkg_ids):
     if JSON_INPUT:
         vimpkg = get_vimpkg_from_json_input()
-        save_vim_config(vimpkg, VIM_CONFIG_PATH)
+        save_vim_config(vimpkg)
         install_pkg(vimpkg)
     elif not argv or not pkg_ids:
         # No options and no git URL passed
-        pkgs = [ p for p in VIM_CONFIG[PKGS] if  p[NAME] not in get_installed_pkgs() ]
-        local_pkgs = get_pkg_from_local_json()
+        pkgs = [ p for p in VIM_CONFIG[PKGS] if  \
+                p[NAME] not in get_installed_pkgs() ]
         for pkg in pkgs:
             vimpkg = VimPackage.dict_to_vimpkg(pkg)
             if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
-                install_pkg(vimpkg)
-        for pkg in local_pkgs:
-            vimpkg = VimPackage.dict_to_vimpkg(pkg)
-            if get_vimpkg(vimpkg.pkg_url):
-                # Pkg is already installed
-                if not add_overwrite(vimpkg.name, vimpkg.pkg_url):
-                    continue
-            if ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?'):
-                check_unique_pkg_name(vimpkg.name)
-                save_vim_config(vimpkg, VIM_CONFIG_PATH)
                 install_pkg(vimpkg)
     else:
         for git_url in pkg_ids:
             vimpkg = get_vimpkg(git_url)
             if not vimpkg:
-                pkg_name = get_pkg_name(git_url)
-                check_unique_pkg_name(pkg_name)
-                vimpkg = add_pkg(pkg_name, git_url)
-                save_vim_config(vimpkg, VIM_CONFIG_PATH)
-            install_pkg(vimpkg)
+                # Clone, then check for local JSON recipe
+                pkg_name = get_pkg_name_from_url(git_url)
+                clone_pkg(git_url, pkg_name)
+                pkg = get_pkg_from_local_json()
+                if pkg:
+                    vimpkg = VimPackage.dict_to_vimpkg(pkg)
+                    rename_pkg(pkg_name, vimpkg.name)
+                    save_vim_config(vimpkg)
+                    install_pkg(vimpkg, skip_clone=True)
+                else:
+                    # No local recipe, prompt user for one
+                    pkg_name = get_pkg_name(git_url)
+                    check_unique_pkg_name(pkg_name)
+                    vimpkg = add_new_pkg(pkg_name, git_url)
+                    save_vim_config(vimpkg)
+                    install_pkg(vimpkg)
 
-def __handle_add(argv, options, pkg_ids):
-    install_target = get_install_target()
+def handle_add(argv, options, pkg_ids):
     if JSON_INPUT:
         vimpkg = get_vimpkg_from_json_input()
-        save_vim_config(vimpkg, VIM_CONFIG_PATH)
-    elif not pkg_ids:
-        for pkg in get_pkg_from_local_json():
-            vimpkg = VimPackage.dict_to_vimpkg(pkg)
-            pkg_name = vimpkg.name
-            check_unique_pkg_name(pkg_name)
-            git_url = vimpkg.pkg_url
-            if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
-                if not add_overwrite(pkg_name, git_url):
-                    continue
-            save_vim_config(vimpkg, VIM_CONFIG_PATH)
+        save_vim_config(vimpkg)
     else:
         for git_url in pkg_ids:
             pkg_name = get_pkg_name(git_url)
@@ -585,12 +571,11 @@ def __handle_add(argv, options, pkg_ids):
             if git_url in [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]:
                 if not add_overwrite(pkg_name, git_url):
                     continue
-            vimpkg = add_pkg(pkg_name, git_url)
-            save_vim_config(vimpkg, VIM_CONFIG_PATH)
+            vimpkg = add_new_pkg(pkg_name, git_url)
+            save_vim_config(vimpkg)
 
-def __handle_remove(argv, options, pkg_ids):
+def handle_remove(argv, options, pkg_ids):
     global ASSUME_YES
-    install_target = get_install_target()
     if not pkg_ids:
         report_fail('No package URL specified. Exiting', confirm_continue=False)
     for git_url in pkg_ids:
@@ -603,14 +588,13 @@ def __handle_remove(argv, options, pkg_ids):
         if ASSUME_YES or user_confirm(msg):
             remove_pkg(vimpkg)
             VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
-            save_vim_config(file_path=VIM_CONFIG_PATH)
+            save_vim_config()
             print 'Successfully removed package `' + pkg_name + '`'
         else:
             print 'Skipped removal of `' + pkg_name +'`'
 
-def __handle_update(argv, options, pkg_ids):
+def handle_update(argv, options, pkg_ids):
     global ASSUME_YES
-    install_target = get_install_target()
     if not pkg_ids:  # If no urls provided, assume updating all packages in vim_config
         pkg_ids = [ p[PKG_URL] for p in VIM_CONFIG[PKGS] ]
         if not pkg_ids:
@@ -628,8 +612,8 @@ def __handle_update(argv, options, pkg_ids):
                 print 'Skipped updating package `' + pkg_name +'`'
 
 
-MODES = { 'init': first_run, 'install': __handle_install, 'remove': __handle_remove, \
-        'update': __handle_update, 'add': __handle_add, 'list': print_packages}
+MODES = { 'init': first_run, 'install': handle_install, 'remove': handle_remove, \
+        'update': handle_update, 'add': handle_add, 'list': print_packages }
 
 def process_cmd_args():
     argv = sys.argv[1:]
