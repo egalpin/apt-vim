@@ -6,7 +6,7 @@ from subprocess import call, check_output, CalledProcessError
 HOME = os.path.expanduser("~")
 SCRIPT_ROOT_DIR = os.path.join(HOME, '.vimpkg')
 VIM_ROOT_DIR = os.path.join(HOME, '.vim')
-BUNDLE_PATH = os.path.join(VIM_ROOT_DIR, '.vim/bundle')
+BUNDLE_PATH = os.path.join(VIM_ROOT_DIR, 'bundle')
 SRC_DIR = os.path.join(SCRIPT_ROOT_DIR, 'src')
 BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
 VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
@@ -194,18 +194,16 @@ def clone_pkg(git_url, pkg_name=None):
 def rename_pkg(old_name, new_name):
     if old_name == new_name:
         return
-    if not check_unique_pkg_name(new_name):
-        report_fail('Must provide new, unique package name',
-                    confirm_continue=False)
+    check_unique_pkg_name(new_name)
     with open(VIM_CONFIG_PATH, 'r') as f:
         content = f.read()
     replaced_content = content.replace(old_name, new_name)
     with open(VIM_CONFIG_PATH, 'w') as f:
         f.write(replaced_content)
     # Move the cloned vim plugin
-    old_dir = os.path.join(BUNDLE_PATH, old_name)
+    old_dir = os.path.join(INSTALL_TARGET, old_name)
     if os.path.exists(old_dir):
-        new_dir = os.path.join(BUNDLE_PATH, new_name)
+        new_dir = os.path.join(INSTALL_TARGET, new_name)
         shutil.move(old_dir, new_dir)
     # Move any source files corresponding to the vim plugin
     old_dir = os.path.join(SRC_DIR, old_name)
