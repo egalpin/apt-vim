@@ -129,7 +129,7 @@ def get_pkg_from_local_json(filenames=None):
             sys.exit(1)
 
 def status_update(pkg_name):
-    print '\nCloning, configuring, and installing `' + pkg_name + '`'
+    print '\nConfiguring and installing `' + pkg_name + '`'
 
 def install_pkg(vimpkg, skip_clone=False):
     status_update(vimpkg.name)
@@ -158,15 +158,14 @@ def add_new_pkg(pkg_name, git_url):
     if not pkg_name:
         report_fail('Each package must have a non-blank name.',
                 confirm_continue=False)
+    elif pkg_name in [ p[NAME] for p in VIM_CONFIG[PKGS] ]:
+        report_fail('Skipping installed package `' + pkg_name + '`' \
+                    + '\nTo re-install `' + pkg_name + '` run:' \
+                    + '\n\t`apt-vim update ' + git_url + '`')
+        return None
     vimpkg = VimPackage(pkg_url=git_url)
     vimpkg.name = pkg_name
 
-    if os.path.exists(os.path.join(INSTALL_TARGET, pkg_name)):
-        print 'Skipping installed package `' + pkg_name + '`'
-        print 'To re-install `' + pkg_name + '` run:' \
-                + '\n\t`apt-vim remove ' + pkg_name + '`' \
-                + '\n\t`apt-vim install ' + git_url + '`'
-        sys.exit(0)
 
     # Get dependencies of package
     depends = get_depend(pkg_name)
@@ -184,6 +183,11 @@ def clone_pkg(git_url, pkg_name=None):
     if git_url:
         if not pkg_name:
             pkg_name = get_pkg_name_from_url(git_url)
+        if os.path.exists(os.path.join(INSTALL_TARGET, pkg_name)):
+            report_fail('Skipping installed package `' + pkg_name + '`' \
+                        + '\nTo re-install `' + pkg_name + '` run:' \
+                        + '\n\t`apt-vim update ' + git_url + '`')
+            return
         if pkg_name and not call_silent(['git', 'clone', git_url, pkg_name]):
             report_fail('Failed to clone `' + pkg_name + '`')
     if pkg_name and not os.path.exists(pkg_name):
