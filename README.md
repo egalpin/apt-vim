@@ -104,4 +104,4 @@ Removes a plugin and all of its dependencies. In doing so, your system will not 
 ####update
 `apt-vim update [options] [URLs]` URLs:  URLs of Git repositories separated by whitespace
 
-Update first removes a plugin, then re-clones and re-executes the configuration for that plugin.
+Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
