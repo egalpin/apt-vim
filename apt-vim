@@ -530,7 +530,7 @@ def handle_install(argv, options, pkg_ids):
         vimpkg = get_vimpkg_from_json_input()
         save_vim_config(vimpkg)
         install_pkg(vimpkg)
-    elif not argv or not pkg_ids:
+    elif not argv and not pkg_ids:
         # No options and no git URL passed
         pkgs = [ p for p in VIM_CONFIG[PKGS] if  \
                 p[NAME] not in get_installed_pkgs() ]
@@ -608,6 +608,13 @@ def handle_update(argv, options, pkg_ids):
                 print 'Successfully updated package `' + pkg_name + '`'
             else:
                 print 'Skipped updating package `' + pkg_name +'`'
+        else:
+            print 'Package not installed: ' + git_url
+            if user_confirm('Would you like to install it?'):
+                if valid_url(git_url):
+                    handle_install(None, None, [git_url])
+                else:
+                    report_fail('`' + git_url + '` is not a valid URL. Skipping install.')
 
 
 MODES = { 'init': first_run, 'install': handle_install, 'remove': handle_remove, \
