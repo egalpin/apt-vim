@@ -289,9 +289,8 @@ def print_packages():
         print '\t' + pkg
     if available:
         print '\nAvailable packages (install with `apt-vim install -y <URL>`): '
-        print '\tName\tURL'
-        for pkg in sorted(available, key=lambda s: s.lower()):
-            print '\t' + pkg[0]
+        for pkg in available:
+            print '\t' + pkg[1]
     print
 
 def add_overwrite(pkg_name, git_url):
