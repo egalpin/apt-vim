@@ -133,13 +133,15 @@ def status_update(pkg_name):
 
 def install_pkg(vimpkg, skip_clone=False):
     status_update(vimpkg.name)
+    # Install dependencies of package
+    install_dependencies(vimpkg)
     # Clone the plugin and run any post-install commands
     if not skip_clone:
         clone_pkg(vimpkg.pkg_url, vimpkg.name)
+    os.chdir(INSTALL_TARGET)
+    os.chdir(vimpkg.name)
     if not exe_shell_commands(vimpkg.get_recipe()):
         report_fail('Failed to intall ' + vimpkg.name)
-    # Install dependencies of package
-    install_dependencies(vimpkg)
     # Change back to the DIR containing this script
     os.chdir(SCRIPT_ROOT_DIR)
 
