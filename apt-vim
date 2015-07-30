@@ -3,6 +3,12 @@ import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
+# Bind input to raw_input for py2/py3 compatibility
+try:
+   input = raw_input
+except NameError:
+   pass
+
 HOME = os.path.expanduser("~")
 SCRIPT_ROOT_DIR = os.path.join(HOME, '.vimpkg')
 VIM_ROOT_DIR = os.path.join(HOME, '.vim')
@@ -50,7 +56,7 @@ class Dependency(PkgItem):
 
     def to_dict(self):
         # Convert python variable names to json variable names
-        return {k.replace('_', '-'): v for k,v in self.__dict__.items()}
+        return {k.replace('_', '-'): v for k,v in list(self.__dict__.items())}
 
     @staticmethod
     def dict_to_dep(d):
@@ -66,7 +72,7 @@ class VimPackage(PkgItem):
 
     def to_dict(self):
         # Convert python variable names to json variable names
-        d = {k.replace('_', '-'): v for k,v in self.__dict__.items()}
+        d = {k.replace('_', '-'): v for k,v in list(self.__dict__.items())}
         deps = [ dep.to_dict() for dep in self.depends_on ]
         d[DPND] = deps
         return d
@@ -125,11 +131,11 @@ def get_pkg_from_local_json(filenames=None):
             pkg = ast.literal_eval(json)
             return pkg
         except:
-            print 'Parse error. Please enter a valid JSON.'
+            print('Parse error. Please enter a valid JSON.')
             sys.exit(1)
 
 def status_update(pkg_name):
-    print '\nConfiguring and installing `' + pkg_name + '`'
+    print('\nConfiguring and installing `' + pkg_name + '`')
 
 def install_pkg(vimpkg, skip_clone=False):
     status_update(vimpkg.name)
@@ -151,7 +157,7 @@ def get_pkg_name(git_url):
         return vimpkg.name
     if ASSUME_YES:
         return get_pkg_name_from_url(git_url)
-    pkg_name = raw_input('Enter a name for package `' + git_url + '` (<ENTER> for automatic naming):  ')
+    pkg_name = input('Enter a name for package `' + git_url + '` (<ENTER> for automatic naming):  ')
     if not pkg_name:
         pkg_name = get_pkg_name_from_url(git_url)
     return pkg_name
@@ -238,7 +244,7 @@ def install_dependencies(vimpkg):
                     dst = os.path.join(BIN_DIR, dep.name)
                     shutil.copyfile(exe, dst)
         else:
-            print '`' + dep.name + '` already in PATH'
+            print('`' + dep.name + '` already in PATH')
 
 def find_executable(path, filename):
     executable = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
@@ -262,19 +268,19 @@ def user_confirm(msg=None):
     num_tries = 0
     while num_tries < 3:
         try:
-            user_choice = raw_input(msg).strip().lower()
+            user_choice = input(msg).strip().lower()
             if strtobool(user_choice):
                 return True
             return False
         except:  # Invalid option, retry
-            print 'Invalid option. Please enter `Y` or `N` only'
+            print('Invalid option. Please enter `Y` or `N` only')
             num_tries += 1
     sys.exit(1)
 
 def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
     if fail_msg is None:
         fail_msg = 'Something went wrong...\n'
-    print fail_msg
+    print(fail_msg)
     if confirm_continue:
         if user_confirm(confirm_msg):
             return True
@@ -284,14 +290,14 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
 def print_packages():
     installed = sorted(get_installed_pkgs(), key=lambda s: s.lower())
     available = [ [p[NAME], p[PKG_URL]] for p in VIM_CONFIG[PKGS] if p[NAME] not in installed ]
-    print 'Installed packages: '
+    print('Installed packages: ')
     for pkg in installed:
-        print '\t' + pkg
+        print('\t' + pkg)
     if available:
-        print '\nAvailable packages (install with `apt-vim install -y <URL>`): '
+        print('\nAvailable packages (install with `apt-vim install -y <URL>`): ')
         for pkg in available:
-            print '\t' + pkg[1]
-    print
+            print('\t' + pkg[1])
+    print('\n')
 
 def add_overwrite(pkg_name, git_url):
     if user_confirm('Package `' + pkg_name + '` already exists. Do you wish to overwrite?'):
@@ -322,7 +328,7 @@ def remove_pkg_bin(vimpkg):
                 if dep.name in bins and  \
                         dep.name not in [ d.name for d in newpkg.depends_on ]:
                     os.remove(os.path.join(BIN_DIR, dep.name))
-                    print 'Removed binary `' + dep.name + '`'
+                    print('Removed binary `' + dep.name + '`')
 
 
 def remove_pkg_src(vimpkg):
@@ -341,12 +347,15 @@ def get_depend(pkg_name='this plugin'):
         return [];
     depends = []
     if user_confirm('Does ' + pkg_name + ' have any Dependencies?'):
+        print('\nEnter dependencies one at a time. You will be prompted' + \
+                '\nto enter an installation recipe for each dependency.' + \
+                '\nTerminate dependency list with an empty line.')
         i = 1;
-        dep_name = raw_input('Name for dependency ' + str(i) + ':  ')
+        dep_name = input('Name for dependency ' + str(i) + ':  ')
         while dep_name != "":
             depends.append(__get_depend(dep_name))
             i += 1
-            dep_name = raw_input('Name for dependency ' + str(i) + ':  ')
+            dep_name = input('Name for dependency ' + str(i) + ':  ')
     return depends
 
 def __get_depend(name):
@@ -367,14 +376,14 @@ def get_recipe(msg=None):
 
 def __get_recipe():
     commands = []
-    print '\nEnter commands one line at a time. ' + \
-            'Terminate commands with an empty line.'
+    print('\nEnter commands one line at a time. ' + \
+            'Terminate commands with an empty line.')
     i = 1
-    command = raw_input('Command ' + str(i) + ': ')
+    command = input('Command ' + str(i) + ': ')
     while command != "":
         i += 1
         commands.append(command)
-        command = raw_input('Command ' + str(i) + ': ')
+        command = input('Command ' + str(i) + ': ')
     return commands
 
 def save_vim_config(vimpkg=None, file_path=None):
@@ -471,8 +480,8 @@ def first_run():
         report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
             'Please ensure that `apt-vim` is in your PATH',
             confirm_continue=False)
-    print 'Completed successfully'
-    print 'Please ensure that ' + os.path.abspath(BIN_DIR) + ' is in your PATH'
+    print('Completed successfully')
+    print('Please ensure that ' + os.path.abspath(BIN_DIR) + ' is in your PATH')
     sys.exit(0)
 
 def verify_bin_in_path():
@@ -508,14 +517,14 @@ def get_installed_pkgs():
 
 def get_vimpkg_from_json_input():
     input_str = ''
-    line = raw_input().strip()
+    line = input().strip()
     while line != "":
         input_str += line
-        line = raw_input().strip()
+        line = input().strip()
     try:
         input_dict = ast.literal_eval(input_str)
     except:
-        print 'Parse error. Please enter a valid JSON.'
+        print('Parse error. Please enter a valid JSON.')
         sys.exit(1)
     vimpkg = VimPackage.dict_to_vimpkg(input_dict)
     return vimpkg
@@ -589,9 +598,9 @@ def handle_remove(argv, options, pkg_ids):
             remove_pkg(vimpkg)
             VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
             save_vim_config()
-            print 'Successfully removed package `' + pkg_name + '`'
+            print('Successfully removed package `' + pkg_name + '`')
         else:
-            print 'Skipped removal of `' + pkg_name +'`'
+            print('Skipped removal of `' + pkg_name +'`')
 
 def handle_update(argv, options, pkg_ids):
     if not pkg_ids:  # If no urls provided, assume updating all packages in vim_config
@@ -606,11 +615,11 @@ def handle_update(argv, options, pkg_ids):
             if ASSUME_YES or user_confirm(msg):
                 remove_pkg(vimpkg)
                 install_pkg(vimpkg)
-                print 'Successfully updated package `' + pkg_name + '`'
+                print('Successfully updated package `' + pkg_name + '`')
             else:
-                print 'Skipped updating package `' + pkg_name +'`'
+                print('Skipped updating package `' + pkg_name +'`')
         else:
-            print 'Package not installed: ' + git_url
+            print('Package not installed: ' + git_url)
             if user_confirm('Would you like to install it?'):
                 if valid_url(git_url):
                     handle_install(None, None, [git_url])
@@ -654,12 +663,12 @@ def process_cmd_args():
         MODES[mode](argv[1:], options, remainder)
 
 def usage():
-    print 'Valid modes: ', str(sorted(MODES.keys(), key=lambda s: s.lower())), '\n'
+    print('Valid modes: ', str(sorted(list(MODES.keys()), key=lambda s: s.lower())), '\n')
     sys.exit(1)
 
 def main():
     process_cmd_args()
-    print 'Completed successfully!'
+    print('Completed successfully!')
 
 
 if __name__ == '__main__':
