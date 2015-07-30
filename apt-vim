@@ -137,6 +137,14 @@ def get_pkg_from_local_json(filenames=None):
 def status_update(pkg_name):
     print('\nConfiguring and installing `' + pkg_name + '`')
 
+def isInstalled(pkg_name, git_url):
+    if pkg_name in [ p[NAME] for p in VIM_CONFIG[PKGS] ]:
+        report_fail('Skipping installed package `' + pkg_name + '`' \
+                + '\nTo re-install `' + pkg_name + '` run:' \
+                + '\n\t`apt-vim update ' + git_url + '`')
+        return True
+    return False
+
 def install_pkg(vimpkg, skip_clone=False):
     status_update(vimpkg.name)
     # Install dependencies of package
@@ -166,14 +174,10 @@ def add_new_pkg(pkg_name, git_url):
     if not pkg_name:
         report_fail('Each package must have a non-blank name.',
                 confirm_continue=False)
-    elif pkg_name in [ p[NAME] for p in VIM_CONFIG[PKGS] ]:
-        report_fail('Skipping installed package `' + pkg_name + '`' \
-                    + '\nTo re-install `' + pkg_name + '` run:' \
-                    + '\n\t`apt-vim update ' + git_url + '`')
+    elif isInstalled(pkg_name, git_url):
         return None
     vimpkg = VimPackage(pkg_url=git_url)
     vimpkg.name = pkg_name
-
 
     # Get dependencies of package
     depends = get_depend(pkg_name)
@@ -326,7 +330,8 @@ def remove_pkg_bin(vimpkg):
             newpkg = VimPackage.dict_to_vimpkg(pkg)
             for dep in vimpkg.depends_on:
                 if dep.name in bins and  \
-                        dep.name not in [ d.name for d in newpkg.depends_on ]:
+                        dep.name not in [ d.name for d in newpkg.depends_on ] \
+                        and os.path.exists(os.path.join(BIN_DIR, dep.name)):
                     os.remove(os.path.join(BIN_DIR, dep.name))
                     print('Removed binary `' + dep.name + '`')
 
@@ -555,6 +560,8 @@ def handle_install(argv, options, pkg_ids):
             if not vimpkg:
                 # Clone, then check for local JSON recipe
                 pkg_name = get_pkg_name_from_url(git_url)
+                if isInstalled(pkg_name, git_url):
+                    continue
                 clone_pkg(git_url, pkg_name)
                 skip_clone = True
                 pkg = get_pkg_from_local_json()
