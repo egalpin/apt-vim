@@ -9,7 +9,7 @@ Plugin installation recipes can be saved and shared, allowing users to create po
 #Installation
 1. Install Vim
 2. Install Git
-3. Install python 2.7.x
+3. Install python 2.7.x or python 3
 4. Clone this repo:  `git clone https://github.com/egalpin/apt-vim.git`
 5. Change to the cloned directory
   - `cd apt-vim`
