@@ -6,6 +6,8 @@ apt-vim aims to serve as a complete VIM plugin management tool including depende
 
 Plugin installation recipes can be saved and shared, allowing users to create portable configuration files, and allowing plugin developers to create an automated installation process for their users.
 
+For an example plugin recipe, see [tern_for_vim](https://github.com/marijnh/tern_for_vim/blob/master/vim_config.json).  If you'd like to have a recipe created for your plugin, please open an issue :-) 
+
 #Installation
 1. Install Vim
 2. Install Git
