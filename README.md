@@ -2,9 +2,9 @@
 Fully-automated Plugin Manager for Vim
 
 ##Summary
-apt-vim aims to serve as the first fully-automated Vim plugin management tool including dependency installation, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
+`apt-vim` aims to serve as the first fully-automated, cross-platform plugin management tool for Vim __including dependency installation__, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
 
-Plugin installation recipes can be saved and shared, allowing users to create portable configuration files, and allowing plugin developers to create an automated installation process for their users.
+Plugin installation recipes can be saved and shared, allowing users to create portable configuration files, and allowing plugin developers to create an automated installation process for their users. Installation recipes can be made cross-platform by setting recipes for `linux`, `darwin` (Mac), or `windows` (cygwin). Recipes you create will be saved under your current platform automatically.
 
 For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like to have a recipe created for your plugin, please open an issue :-) 
 
