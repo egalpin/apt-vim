@@ -8,7 +8,7 @@ Plugin installation recipes can be saved and shared, allowing users to create po
 
 For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like to have a recipe created for your plugin, please open an issue :-)
 
-__Note:__ `apt-vim` is under active development. Please report any issues, however minor you feel they may be, by opening an [issue][issues]. Please also open a new [issue][issues] to create a feature request. Adding tags and thorough descriptions will be of great help!
+__Note:__ `apt-vim` is under active development. Please report any issues, questions, or suggestions, however minor you feel they may be, by opening an [issue][issues]. Please also open a new [issue][issues] to create a feature request. Adding tags and thorough descriptions will be of great help!
 
 #Installation
 1. Install Vim
