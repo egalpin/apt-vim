@@ -20,7 +20,7 @@ For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like t
   - This can be done by adding `export PATH=$PATH:~/.vimpkg/bin` to `~/.bashrc` or `~/.bash_profile` or equivalent shell configuration file
   - `~/.vimpkg/bin` is where all Vim plugin dependencies will be installed
 7. Add `execute pathogen#infect()` and then `call pathogen#helptags()` to `~/.vimrc`
-  - If `~/.vimrc` doesn't exist, create a new file containing at least the above 2 commands
+  - If `~/.vimrc` doesn't exist, create a new `~/.vimrc` file containing at least the above 2 commands
 8. Run `apt-vim install -y`
   - This will clone and install [Pathogen](https://github.com/tpope/vim-pathogen) and, as an example, [Tagbar](https://github.com/majutsushi/tagbar) and its dependency, `ctags`
 
