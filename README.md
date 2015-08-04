@@ -1,5 +1,5 @@
 # apt-vim
-Fully-automated Plugin Manager for Vim
+Fully-automated, cross-platform Plugin Manager for Vim
 
 ##Summary
 `apt-vim` aims to serve as the first fully-automated, cross-platform plugin management tool for Vim __including dependency installation__, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
