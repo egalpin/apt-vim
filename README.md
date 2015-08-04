@@ -6,7 +6,7 @@ apt-vim aims to serve as the first fully-automated Vim plugin management tool in
 
 Plugin installation recipes can be saved and shared, allowing users to create portable configuration files, and allowing plugin developers to create an automated installation process for their users.
 
-For an example plugin recipe, see [tern_for_vim]().  If you'd like to have a recipe created for your plugin, please open an issue :-) 
+For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like to have a recipe created for your plugin, please open an issue :-) 
 
 #Installation
 1. Install Vim
@@ -97,11 +97,11 @@ Allows you to add a plugin and its configuration to your `vim_config.json` file,
 There are a number of cases to consider when installing a plugin, as an installation recipe can come from many places:
 
 1. If a configuration already exists in `vim_config.json` for a specified URL, that configuration will be used.
-2. If a configuraion file was provided with the cloned plugin repo, it will be used. Configuration files are in the form of a `json` with `@vimpkg` on the first line. See [tern_for_vim]()
+2. If a configuraion file was provided with the cloned plugin repo, it will be used. Configuration files are in the form of a `json` with `@vimpkg` on the first line. See [tern_for_vim][tern_for_vim]
 3. If no pre-defined configuration is found, you will be prompted to enter dependencies (if any) and their installation recipes, as well as a recipe for the plugin itself (if any)
   - A recipe for a plugin refers to commands to run _after_ cloning a plugin's repo
   - A recipe for a plugin is executed from the context of the cloned directory
-  - Ex. [YouCompleteMe]() requires that you run `./install.sh` after cloning
+  - Ex. [YouCompleteMe][YouCompleteMe] requires that you run `./install.sh` after cloning
 
 To edit the configuration for a given plugin after installation, directly edit the file `~/.vimpkg/vim_config.json` or `remove` and then `install` that specific URL.
 
@@ -120,5 +120,5 @@ Removes a plugin and all of its dependencies. In doing so, your system will not 
 Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
 
 
-[tern_for_vim](https://github.com/marijnh/tern_for_vim/blob/master/vim_config.json)
-[YouCompleteMe](https://github.com/Valloric/YouCompleteMe)
+[tern_for_vim]: https://github.com/marijnh/tern_for_vim/blob/master/vim_config.json
+[YouCompleteMe]: https://github.com/Valloric/YouCompleteMe
