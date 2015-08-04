@@ -1,12 +1,14 @@
 # apt-vim
 Fully-automated, cross-platform Plugin Manager for Vim
 
-##Summary
+#Summary
 `apt-vim` aims to serve as the first fully-automated, cross-platform plugin management tool for Vim __including dependency installation__, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
 
-Plugin installation recipes can be saved and shared, allowing users to create portable configuration files ([here's mine](https://github.com/egalpin/vim_settings/blob/master/vim_config.json)), and allowing plugin developers to create an automated installation process for their users. Installation recipes can be made cross-platform by setting recipes for `linux`, `darwin` (Mac), or `windows` (cygwin). Recipes you create will be saved under your current platform automatically.
+Plugin installation recipes can be saved and shared, allowing users to create portable configuration files ([here's one](https://github.com/egalpin/vim_settings/blob/master/vim_config.json)), and allowing plugin developers to create an automated installation process for their users. Installation recipes can be made cross-platform by setting recipes for `linux`, `darwin` (Mac), or `windows` (cygwin). Recipes you create will be saved under your current platform automatically.
 
-For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like to have a recipe created for your plugin, please open an issue :-) 
+For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like to have a recipe created for your plugin, please open an issue :-)
+
+__Note:__ `apt-vim` is under active development. Please report any issues, however minor you feel they may be, by opening an [issue][issues]. Please also open a new [issue][issues] to create a feature request. Adding tags and thorough descriptions will be of great help!
 
 #Installation
 1. Install Vim
@@ -122,3 +124,4 @@ Update first removes a plugin's files (but _not_ its configuration), then re-clo
 
 [tern_for_vim]: https://github.com/marijnh/tern_for_vim/blob/master/vim_config.json
 [YouCompleteMe]: https://github.com/Valloric/YouCompleteMe
+[issues]: https://github.com/egalpin/apt-vim/issues
