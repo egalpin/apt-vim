@@ -75,24 +75,32 @@ apt-vim install -jy
 
 
 ####init
-`apt-vim init`
+
+    apt-vim init
 
 This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
 
 ####list
-`apt-vim list`
+
+    apt-vim list
 
 Displays a list of packages you have _actually_ installed, and a list of packages that are in your `~/.vimpkg/vim_config.json` file but _not yet installed_. 
 
 __Note__: This is not an exhaustive list of all of the plugins that can be installed using `apt-vim`. Any plugin on GitHub (or other Git repository that you have access to) can be installed using `apt-vim` by supplying the corresponding URL.
 
 ####add
-`apt-vim add [options] URLs`  URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
+
+    apt-vim add [options] URLs
+
+URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
 
 Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings. 
 
 ####install
-`apt-vim install [options] [URLs]`  URLs:  URLs of Git repositories separated by whitespace
+
+    apt-vim install [options] [URLs]
+
+URLs:  URLs of Git repositories separated by whitespace
 
 Allows you to add a plugin and its configuration to your `vim_config.json` file, _with_ installation. This will install any declared dependencies, clone the specified URL, and run any post-install commands.
 
@@ -112,12 +120,18 @@ If no URLs are provided, you will be walked through installing any plugins in `v
 Using the `--json` option allows you to install a plugin and specify its configuration. This is useful for installing a new plugin to your Vim setup that someone has created a configuration for. See [above](#options) for an example.
 
 ####remove
-`apt-vim remove [options] [URLs]` URLs:  URLs of Git repositories separated by whitespace
+
+    apt-vim remove [options] URLs
+
+URLs (required):  URLs of Git repositories separated by whitespace
 
 Removes a plugin and all of its dependencies. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `node`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
 
 ####update
-`apt-vim update [options] [URLs]` URLs:  URLs of Git repositories separated by whitespace
+
+    apt-vim update [options] [URLs]
+
+URLs:  URLs of Git repositories separated by whitespace
 
 Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
 
