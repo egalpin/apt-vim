@@ -170,11 +170,11 @@ def get_pkg_name(git_url):
         pkg_name = get_pkg_name_from_url(git_url)
     return pkg_name
 
-def add_new_pkg(pkg_name, git_url):
+def add_new_pkg(pkg_name, git_url, skipInstalledCheck=False):
     if not pkg_name:
         report_fail('Each package must have a non-blank name.',
                 confirm_continue=False)
-    elif isInstalled(pkg_name, git_url):
+    elif not skipInstalledCheck and isInstalled(pkg_name, git_url):
         return None
     vimpkg = VimPackage(pkg_url=git_url)
     vimpkg.name = pkg_name
@@ -459,10 +459,36 @@ def exe_shell_commands(commands=None):
             return report_fail('Command `' + com + '` failed.')
     return True
 
+def port_vim_plugins():
+    global ASSUME_YES
+    src_dir = BUNDLE_PATH + '.bak'
+    install_target = get_install_target()
+    if not os.path.exists(src_dir):
+        return
+    os.chdir(src_dir)
+    git_origin = shlex.split('git config --get remote.origin.url')
+    plugins = os.listdir(src_dir)
+    for pkg_name in plugins:
+        try:
+            target_dir = os.path.join(install_target, pkg_name)
+            shutil.copytree(pkg_name, target_dir)
+            os.chdir(pkg_name)
+            ASSUME_YES = True
+            git_url = check_output(git_origin).strip()
+            vimpkg = add_new_pkg(pkg_name, git_url, skipInstalledCheck=True)
+            save_vim_config(vimpkg)
+        except:
+            continue
+        finally:
+            ASSUME_YES = False
+            os.chdir(src_dir)
+
 def first_run():
     if os.path.exists(VIM_ROOT_DIR):
-        shutil.move(VIM_ROOT_DIR, os.path.join(HOME, '.vim.bak'))
-    os.makedirs(VIM_ROOT_DIR)
+        # Make a backup of the users ~/.vim dir, for safety
+        shutil.copytree(VIM_ROOT_DIR, os.path.join(HOME, '.vim.bak'))
+    else:
+        os.makedirs(VIM_ROOT_DIR)
 
     if not os.path.exists(SCRIPT_ROOT_DIR):
         os.makedirs(SCRIPT_ROOT_DIR)
@@ -485,6 +511,7 @@ def first_run():
         report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
             'Please ensure that `apt-vim` is in your PATH',
             confirm_continue=False)
+    port_vim_plugins()
     print('Completed successfully')
     print('Please ensure that ' + os.path.abspath(BIN_DIR) + ' is in your PATH')
     sys.exit(0)
@@ -518,7 +545,7 @@ def get_urls_from_list(check_list):
     return urls
 
 def get_installed_pkgs():
-    return os.listdir(os.path.join(VIM_ROOT_DIR, 'bundle'))
+    return os.listdir(BUNDLE_PATH)
 
 def get_vimpkg_from_json_input():
     input_str = ''
@@ -681,3 +708,4 @@ def main():
 if __name__ == '__main__':
     main()
     sys.exit(0)
+
