@@ -1,8 +1,8 @@
 # apt-vim
-Fully-automated, cross-platform Plugin Manager for Vim
+Yet another Plugin Manager for Vim
 
 #Summary
-`apt-vim` aims to serve as the first fully-automated, cross-platform plugin management tool for Vim __including dependency installation__, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
+`apt-vim` aims to serve as the first fully-automated, __cross-platform__ plugin management tool for Vim __including dependency installation__, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
 
 Plugin installation recipes can be saved and shared, allowing users to create portable configuration files ([here's one](https://github.com/egalpin/vim_settings/blob/master/vim_config.json)), and allowing plugin developers to create an automated installation process for their users. Installation recipes can be made cross-platform by setting recipes for `linux`, `darwin` (Mac), or `windows` (cygwin). Recipes you create will be saved under your current platform automatically.
 
@@ -11,6 +11,8 @@ For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like t
 __Note:__ `apt-vim` is under active development. Please report any issues, questions, or suggestions, however minor you feel they may be, by opening an [issue][issues]. Please also open a new [issue][issues] to create a feature request. Adding tags and thorough descriptions will be of great help!
 
 #Installation
+_Don't worry, any plugins you already have in `~/.vim/bundle` will persist. If an existing plugin was cloned with `git`, the plugin will automatically be tracked with `apt-vim`._
+
 1. Install Vim
 2. Install Git
 3. Install python 2.7.x or python 3
