@@ -137,6 +137,11 @@ URLs:  URLs of Git repositories separated by whitespace
 
 Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
 
+#Next Steps
+- `pip` installer
+- `brew` installer
+- Improved cross-platform support via increased number of install targets
+    - Ex. 'fedora' and 'ubuntu' rather than simply 'linux'
 
 [tern_for_vim]: https://github.com/marijnh/tern_for_vim/blob/master/vim_config.json
 [YouCompleteMe]: https://github.com/Valloric/YouCompleteMe
