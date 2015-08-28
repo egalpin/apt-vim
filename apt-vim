@@ -9,6 +9,23 @@ try:
 except NameError:
    pass
 
+def getHostOS():
+    distros = {
+            'redhat': [ 'centos', 'redhat', 'fedora' ],
+            'debian': [ 'debian', 'ubuntu' ]
+            }
+    host_os = platform.system().lower();
+    if 'linux' in host_os:
+        host_os = platform.dist()[0].lower()
+        for distro, flavours in distros.iteritems():
+            if host_os in flavours:
+                return distro
+        # Try to fallback
+        return 'linux'
+    # Windows or Darwin
+    return host_os
+
+
 HOME = os.path.expanduser("~")
 SCRIPT_ROOT_DIR = os.path.join(HOME, '.vimpkg')
 VIM_ROOT_DIR = os.path.join(HOME, '.vim')
@@ -25,7 +42,7 @@ PKGS = 'packages'
 RECIPE = 'recipe'
 VIM_CONFIG = None
 OS = 'os'
-HOST_OS = platform.system().lower()
+HOST_OS = getHostOS()
 CWD = os.getcwd()
 PKG_IDENTIFIER = '@vimpkg'
 INSTALL_TARGET = ''
