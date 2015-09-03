@@ -11,11 +11,11 @@ For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like t
 __Note:__ `apt-vim` is under active development. Please report any issues, questions, or suggestions, however minor you feel they may be, by opening an [issue][issues]. Please also open a new [issue][issues] to create a feature request. Adding tags and thorough descriptions will be of great help!
 
 #Installation
-_Don't worry: before starting setup, a backup of the `bundle` directory is created at `~/.vim/bundle.bak`. 
+_Don't worry: before starting setup, a backup of the `bundle` directory is created at `~/.vim/bundle.bak`._ 
 
-Any plugins you already have in `~/.vim/bundle` will persist. If an existing plugin was cloned with `git`, the plugin will automatically be tracked with `apt-vim`.
+_Any plugins you already have in `~/.vim/bundle` will persist. If an existing plugin was cloned with `git`, the plugin will automatically be tracked with `apt-vim`._
 
-Your `.vim` directory will not be altered aside from `bundle`, which will be soft-linked to `~/.vimpkg/bundle`. _
+_Your `.vim` directory will not be altered aside from `bundle`, which will be soft-linked to `~/.vimpkg/bundle`. _
 
 1. Install Vim
 2. Install Git
