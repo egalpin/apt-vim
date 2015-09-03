@@ -13,7 +13,7 @@ __Note:__ `apt-vim` is under active development. Please report any issues, quest
 #Installation
 _Don't worry:_
  - Before starting setup, a backup of the `bundle` directory is created at `~/.vim/bundle.bak`.
- - Any plugins you already have in `~/.vim/bundle` will persist. If an existing plugin was cloned with `git`, the plugin will automatically be tracked with `apt-vim`._
+ - Any plugins you already have in `~/.vim/bundle` will persist. If an existing plugin was cloned with `git`, the plugin will automatically be tracked with `apt-vim`.
  - Your `.vim` directory will not be altered aside from `bundle`, which will be soft-linked to `~/.vimpkg/bundle`.
 
 1. Install Vim
