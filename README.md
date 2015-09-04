@@ -37,6 +37,72 @@ In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  __'add', 
 
 The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins that you use. For a simple example, take a look at [vim_config.json](vim_config.json) in this repo. For an advanced example, look  [here](https://github.com/egalpin/vim_settings/blob/master/vim_config.json).
 
+
+####init
+
+    apt-vim init
+
+This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
+
+####install
+
+    apt-vim install [options] [URLs]
+
+URLs:  URLs of Git repositories separated by whitespace
+
+Allows you to add a plugin and its configuration to your `vim_config.json` file, _with_ installation. This will install any declared dependencies, clone the specified URL, and run any post-install commands.
+
+Most plugins--those without dependencies--can be simply be installed with `apt-vim install -y <git-url>`.  Other plugins, such as [tern_for_vim][tern_install] and [this fork of YouCompleteMe][egalpin_YouCompleteMe] have `apt-vim` recipes built-in.  These plugins, along with their dependencies, can be installed with a simple `apt-vim install -y <git-url>`.
+
+#####For other plugins with dependencies:
+
+There are a number of cases to consider when installing a plugin, as an installation recipe can come from many places:
+
+1. If a configuration already exists in `vim_config.json` for a specified URL, that configuration will be used.
+2. If a configuraion file was provided with the cloned plugin repo, it will be used. Configuration files are in the form of a `json` with `@vimpkg` on the first line. See [tern_for_vim][tern_for_vim]
+3. If no pre-defined configuration is found, you will be prompted to enter dependencies (if any) and their installation recipes, as well as a recipe for the plugin itself (if any)
+  - A recipe for a plugin refers to commands to run _after_ cloning a plugin's repo
+  - A recipe for a plugin is executed from the context of the cloned directory
+  - Ex. [YouCompleteMe][YouCompleteMe] requires that you run `./install.sh` after cloning
+
+To edit the configuration for a given plugin after installation, directly edit the file `~/.vimpkg/vim_config.json` or `remove` and then `install` that specific URL.
+
+If no URLs are provided, you will be walked through installing any plugins in `vim_config.json` that are not already installed. You will be prompted with a choice of whether or not to install each package. Use `--assume-yes` to select all packages in `vim_config.json`.
+
+Using the `--json` option allows you to install a plugin and specify its configuration. This is useful for installing a new plugin to your Vim setup that someone has created a configuration for. See [above](#options) for an example.
+
+####list
+
+    apt-vim list
+
+Displays a list of packages you have _actually_ installed, and a list of packages that are in your `~/.vimpkg/vim_config.json` file but _not yet installed_. 
+
+__Note__: This is not an exhaustive list of all of the plugins that can be installed using `apt-vim`. Any plugin on GitHub (or other Git repository that you have access to) can be installed using `apt-vim` by supplying the corresponding URL.
+
+####add
+
+    apt-vim add [options] URLs
+
+URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
+
+Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings. 
+
+####remove
+
+    apt-vim remove [options] URLs
+
+URLs (required):  URLs of Git repositories separated by whitespace
+
+Removes a plugin and all of its dependencies. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `node`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
+
+####update
+
+    apt-vim update [options] [URLs]
+
+URLs:  URLs of Git repositories separated by whitespace
+
+Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
+
 ####Options
   - -y, --assume-yes
   - -j, --json
@@ -78,68 +144,6 @@ apt-vim install -jy
 }
 ```
 
-
-####init
-
-    apt-vim init
-
-This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
-
-####list
-
-    apt-vim list
-
-Displays a list of packages you have _actually_ installed, and a list of packages that are in your `~/.vimpkg/vim_config.json` file but _not yet installed_. 
-
-__Note__: This is not an exhaustive list of all of the plugins that can be installed using `apt-vim`. Any plugin on GitHub (or other Git repository that you have access to) can be installed using `apt-vim` by supplying the corresponding URL.
-
-####add
-
-    apt-vim add [options] URLs
-
-URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
-
-Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings. 
-
-####install
-
-    apt-vim install [options] [URLs]
-
-URLs:  URLs of Git repositories separated by whitespace
-
-Allows you to add a plugin and its configuration to your `vim_config.json` file, _with_ installation. This will install any declared dependencies, clone the specified URL, and run any post-install commands.
-
-There are a number of cases to consider when installing a plugin, as an installation recipe can come from many places:
-
-1. If a configuration already exists in `vim_config.json` for a specified URL, that configuration will be used.
-2. If a configuraion file was provided with the cloned plugin repo, it will be used. Configuration files are in the form of a `json` with `@vimpkg` on the first line. See [tern_for_vim][tern_for_vim]
-3. If no pre-defined configuration is found, you will be prompted to enter dependencies (if any) and their installation recipes, as well as a recipe for the plugin itself (if any)
-  - A recipe for a plugin refers to commands to run _after_ cloning a plugin's repo
-  - A recipe for a plugin is executed from the context of the cloned directory
-  - Ex. [YouCompleteMe][YouCompleteMe] requires that you run `./install.sh` after cloning
-
-To edit the configuration for a given plugin after installation, directly edit the file `~/.vimpkg/vim_config.json` or `remove` and then `install` that specific URL.
-
-If no URLs are provided, you will be walked through installing any plugins in `vim_config.json` that are not already installed. You will be prompted with a choice of whether or not to install each package. Use `--assume-yes` to select all packages in `vim_config.json`.
-
-Using the `--json` option allows you to install a plugin and specify its configuration. This is useful for installing a new plugin to your Vim setup that someone has created a configuration for. See [above](#options) for an example.
-
-####remove
-
-    apt-vim remove [options] URLs
-
-URLs (required):  URLs of Git repositories separated by whitespace
-
-Removes a plugin and all of its dependencies. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `node`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
-
-####update
-
-    apt-vim update [options] [URLs]
-
-URLs:  URLs of Git repositories separated by whitespace
-
-Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
-
 #Next Steps
 - `pip` installer
 - `brew` installer
@@ -147,5 +151,7 @@ Update first removes a plugin's files (but _not_ its configuration), then re-clo
     - Ex. 'fedora' and 'ubuntu' rather than simply 'linux'
 
 [tern_for_vim]: https://github.com/marijnh/tern_for_vim/blob/master/vim_config.json
+[tern_install]: https://github.com/marijnh/tern_for_vim#apt-vim
 [YouCompleteMe]: https://github.com/Valloric/YouCompleteMe
 [issues]: https://github.com/egalpin/apt-vim/issues
+[egalpin_YouCompleteMe]: https://github.com/egalpin/YouCompleteMe#installation
