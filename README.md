@@ -52,7 +52,7 @@ URLs:  URLs of Git repositories separated by whitespace
 
 Allows you to add a plugin and its configuration to your `vim_config.json` file, _with_ installation. This will install any declared dependencies, clone the specified URL, and run any post-install commands.
 
-Most plugins--those without dependencies--can be simply be installed with `apt-vim install -y <git-url>`.  Other plugins, such as [tern_for_vim][tern_install] and [this fork of YouCompleteMe][egalpin_YouCompleteMe] have `apt-vim` recipes built-in.  These plugins, along with their dependencies, can be installed with a simple `apt-vim install -y <git-url>`.
+Most plugins--those without dependencies--can simply be installed with `apt-vim install -y <git-url>`.  Other plugins, such as [tern_for_vim][tern_install] and [this fork of YouCompleteMe][egalpin_YouCompleteMe] have `apt-vim` recipes built-in.  These plugins, along with their dependencies, can be installed with a simple `apt-vim install -y <git-url>`.
 
 #####For other plugins with dependencies:
 
