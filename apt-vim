@@ -618,7 +618,7 @@ def handle_add(argv, options, pkg_ids):
             vimpkg = add_new_pkg(pkg_name, git_url)
             save_vim_config(vimpkg)
 
-def handle_remove(argv, options, pkg_ids):
+def __handle_remove(argv, options, pkg_ids, delete=False):
     if not pkg_ids:
         report_fail('No package URL specified. Exiting', confirm_continue=False)
     for git_url in pkg_ids:
@@ -630,11 +630,20 @@ def handle_remove(argv, options, pkg_ids):
         msg = 'Confirm remove package `' + pkg_name + '`'
         if ASSUME_YES or user_confirm(msg):
             remove_pkg(vimpkg)
-            VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
-            save_vim_config()
+            if delete:
+                VIM_CONFIG[PKGS] = remove_pkg_ref(vimpkg)
+                save_vim_config()
             print('Successfully removed package `' + pkg_name + '`')
         else:
             print('Skipped removal of `' + pkg_name +'`')
+
+# Remove a package from the plugins dir, but KEEP the recipe
+def handle_remove(argv, options, pkg_ids):
+    return __handle_remove(argv, options, pkg_ids, delete=False)
+
+# Remove a package from the plugins dir, and REMOVE the recipe
+def handle_delete(argv, options, pkg_ids):
+    return __handle_remove(argv, options, pkg_ids, delete=True)
 
 def handle_update(argv, options, pkg_ids):
     if not pkg_ids:  # If no urls provided, assume updating all packages in vim_config
@@ -662,7 +671,7 @@ def handle_update(argv, options, pkg_ids):
 
 
 MODES = { 'init': first_run, 'install': handle_install, 'remove': handle_remove, \
-        'update': handle_update, 'add': handle_add, 'list': print_packages }
+        'delete': handle_delete, 'update': handle_update, 'add': handle_add, 'list': print_packages }
 
 def process_cmd_args():
     argv = sys.argv[1:]
