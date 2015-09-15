@@ -44,14 +44,6 @@ _Don't worry:_
 
 
 #Usage
-- 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
 In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  __[init](#init), [install](#install), [list](#list), [add](#add), [remove](#remove), [delete](#delete), [update](#update)__
 
 The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins that you use. For a simple example, take a look at [vim_config.json](vim_config.json) in this repo. For an advanced example, look  [here](https://github.com/egalpin/vim_settings/blob/master/vim_config.json).
@@ -63,8 +55,6 @@ The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins
 
 This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
 
-Back to [Usage](#usage)
-
 ####install
 
     apt-vim install [options] [URLs]
@@ -75,7 +65,6 @@ Allows you to add a plugin and its configuration to your `vim_config.json` file,
 
 Most plugins--those without dependencies--can simply be installed with `apt-vim install -y <git-url>`.  Other plugins, such as [tern_for_vim][tern_install] and [this fork of YouCompleteMe][egalpin_YouCompleteMe] have `apt-vim` recipes built-in.  These plugins, along with their dependencies, can be installed with a simple `apt-vim install -y <git-url>`.
 
-Back to [Usage](#usage)
 
 #####For other plugins with dependencies:
 
@@ -102,8 +91,6 @@ Displays a list of packages you have _actually_ installed, and a list of package
 
 __Note__: This is not an exhaustive list of all of the plugins that can be installed using `apt-vim`. Any plugin on GitHub (or other Git repository that you have access to) can be installed using `apt-vim` by supplying the corresponding URL.
 
-Back to [Usage](#usage)
-
 ####add
 
     apt-vim add [options] URLs
@@ -111,8 +98,6 @@ Back to [Usage](#usage)
 URLs (required):  URLs of Git repositories separated by whitespace. At least one URL must be specified to add a plugin.
 
 Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings. 
-
-Back to [Usage](#usage)
 
 ####remove
 
@@ -122,8 +107,6 @@ URLs (required):  URLs of Git repositories separated by whitespace
 
 Removes a plugin and all of its dependencies, but KEEPS the installation recipe. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `ctags`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
 
-Back to [Usage](#usage)
-
 ####delete
 
     apt-vim remove [options] URLs
@@ -132,8 +115,6 @@ URLs (required):  URLs of Git repositories separated by whitespace
 
 The same as `remove`, but also REMOVES the installation recipe.
 
-Back to [Usage](#usage)
-
 ####update
 
     apt-vim update [options] [URLs]
@@ -141,8 +122,6 @@ Back to [Usage](#usage)
 URLs:  URLs of Git repositories separated by whitespace
 
 Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
-
-Back to [Usage](#usage)
 
 ####Options
   - -y, --assume-yes
