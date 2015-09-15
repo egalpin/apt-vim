@@ -33,7 +33,7 @@ _Don't worry:_
 
 
 #Usage
-In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  __'add', 'init', 'install', 'list', 'remove', 'update'__
+In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  __'add', 'init', 'install', 'list', 'remove', 'delete', 'update'__
 
 The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins that you use. For a simple example, take a look at [vim_config.json](vim_config.json) in this repo. For an advanced example, look  [here](https://github.com/egalpin/vim_settings/blob/master/vim_config.json).
 
@@ -93,7 +93,15 @@ Allows you to add a plugin and its configuration to your `vim_config.json` file,
 
 URLs (required):  URLs of Git repositories separated by whitespace
 
-Removes a plugin and all of its dependencies. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `node`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
+Removes a plugin and all of its dependencies, but KEEPS the installation recipe. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `ctags`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
+
+####delete
+
+    apt-vim remove [options] URLs
+
+URLs (required):  URLs of Git repositories separated by whitespace
+
+The same as `remove`, but also REMOVES the installation recipe.
 
 ####update
 
