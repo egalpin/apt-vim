@@ -1,6 +1,17 @@
 # apt-vim
 Yet another Plugin Manager for Vim
 
+- [Summary](#summary)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Init](#init)
+  - [Install](#install)
+  - [List](#list)
+  - [Add](#add)
+  - [Remove](#remove)
+  - [Delete](#delete)
+  - [Update](#update)
+
 #Summary
 `apt-vim` aims to serve as a fully-automated, __cross-platform__ plugin management tool for Vim __including dependency installation__, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
 
