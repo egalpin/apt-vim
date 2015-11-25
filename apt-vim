@@ -271,8 +271,8 @@ def user_confirm(msg=None):
     msg += ' [y|N]:  '
     num_tries = 0
     while num_tries < 3:
+        user_choice = input(msg).strip().lower()
         try:
-            user_choice = input(msg).strip().lower()
             if strtobool(user_choice):
                 return True
             return False
