@@ -539,6 +539,7 @@ def first_run():
             #'Please manually add `' + os.path.abspath(BIN_DIR) + '` your PATH',
             #confirm_continue=False)
 
+    os.environ['PATH'] += os.pathsep + os.path.abspath(BIN_DIR)
     missing_dependencies = init()
     if missing_dependencies:
         report_fail('Cannot proceed. Missing the following dependencies that could' \
