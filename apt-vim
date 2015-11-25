@@ -490,8 +490,10 @@ def port_vim_plugins():
 
 def first_run():
     if os.path.exists(SCRIPT_ROOT_DIR):
-        report_fail("There's already an apt-vim config file at " + os.path.abspath(SCRIPT_ROOT_DIR),
-                    "Are you sure you want to continue with setup?")
+        report_fail("There's already an apt-vim root directory at " + \
+                    os.path.abspath(SCRIPT_ROOT_DIR) + "\n" + \
+                    "Delete or move the directory if you want to perform a fresh install",
+                    confirm_continue=False)
     if os.path.exists(VIM_ROOT_DIR):
         # Make a backup of the users ~/.vim dir, for safety
         shutil.copytree(VIM_ROOT_DIR, os.path.join(HOME, '.vim.bak'))
