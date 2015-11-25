@@ -82,6 +82,13 @@ class VimPackage(PkgItem):
         deps = [ Dependency.dict_to_dep(dep) for dep in d[DPND] ]
         return VimPackage(d[PKG_URL], d[NAME], deps, d[RECIPE])
 
+def fix_ownership(path):
+    """Change the owner of the file to SUDO_UID"""
+
+    uid = os.environ.get('SUDO_UID')
+    gid = os.environ.get('SUDO_GID')
+    if uid is not None:
+        os.chown(path, int(uid), int(gid))
 
 def load_vim_config(file_path=VIM_CONFIG_PATH):
     global VIM_CONFIG
@@ -524,7 +531,7 @@ def first_run():
 
     port_vim_plugins()
 
-    with open('/etc/profile', 'w') as f:
+    with open('/etc/profile', 'a') as f:
         export = 'export PATH=$PATH:' + os.path.abspath(BIN_DIR)
         f.write(export)
     #if not exe_shell_commands(["sudo echo 'export PATH=$PATH:" + os.path.abspath(BIN_DIR) + "' >> /etc/profile"]):
@@ -539,6 +546,7 @@ def first_run():
                 + str(missing_dependencies),
                 confirm_continue=False)
 
+    fix_ownership(os.path.abspath(SCRIPT_ROOT_DIR))
     print('Completed successfully')
     sys.exit(0)
 
