@@ -1,7 +1,7 @@
 #! /usr/bin/env sh
 
-start_dir = `pwd`
-home = $( echo $HOME )
+start_dir=`pwd`
+home=$( echo $HOME )
 
 curl -fLo ${home}/apt-vim/apt-vim --create-dirs \
     https://raw.githubusercontent.com/egalpin/apt-vim/29_ENH_one_touch_setup/apt-vim
