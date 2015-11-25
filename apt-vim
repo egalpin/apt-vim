@@ -456,7 +456,12 @@ def exe_shell_commands(commands=None):
             else:
                 call(shlex.split(com))
         except:
-            return report_fail('Command `' + com + '` failed.')
+            global ASSUME_YES
+            prev_assume = ASSUME_YES
+            ASSUME_YES = False
+            user_response = report_fail('Command `' + com + '` failed.')
+            ASSUME_YES = prev_assume
+            return user_response
     return True
 
 def port_vim_plugins():
