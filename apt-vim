@@ -10,12 +10,13 @@ except NameError:
    pass
 
 HOME = os.path.expanduser("~")
-SCRIPT_ROOT_DIR = os.path.join(HOME, '.vimpkg')
-VIM_ROOT_DIR = os.path.join(HOME, '.vim')
-BUNDLE_PATH = os.path.join(VIM_ROOT_DIR, 'bundle')
-SRC_DIR = os.path.join(SCRIPT_ROOT_DIR, 'src')
-BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
-VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
+SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
+VIM_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vim'))
+BUNDLE_PATH = os.path.abspath(os.path.join(VIM_ROOT_DIR, 'bundle'))
+SRC_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'src'))
+BIN_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'bin'))
+VIM_CONFIG_PATH = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json'))
+SCRIPT_EXE_PATH = '/usr/local/bin/apt-vim'
 GBL = 'global'
 DPND = 'depends-on'
 NAME = 'name'
@@ -498,7 +499,7 @@ def port_vim_plugins():
 def first_run():
     if os.path.exists(SCRIPT_ROOT_DIR):
         report_fail("There's already an apt-vim root directory at " + \
-                    os.path.abspath(SCRIPT_ROOT_DIR) + "\n" + \
+                   SCRIPT_ROOT_DIR + "\n" + \
                     "Delete or move the directory if you want to perform a fresh install",
                     confirm_continue=False)
     if os.path.exists(VIM_ROOT_DIR):
@@ -547,7 +548,17 @@ def first_run():
                 + str(missing_dependencies),
                 confirm_continue=False)
 
-    fix_ownership(os.path.abspath(SCRIPT_ROOT_DIR))
+    for path in [SCRIPT_ROOT_DIR,
+            VIM_ROOT_DIR,
+            BUNDLE_PATH,
+            SRC_DIR,
+            BIN_DIR,
+            VIM_CONFIG_PATH,
+            SCRIPT_EXE_PATH]:
+        fix_ownership(path)
+
+    os.chmod(SCRIPT_EXE_PATH, 0o744)
+
     print('Completed successfully')
     sys.exit(0)
 
