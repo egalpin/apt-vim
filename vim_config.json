@@ -2,8 +2,32 @@
     "global": {
         "depends-on": [
             {
+                "name": "vim",
+                "recipe": {
+                    "darwin": [],
+                    "linux": [
+                        "sudo apt-get install -y vim"
+                    ]
+                }
+            },
+            {
                 "name": "git",
-                "recipe": {}
+                "recipe": {
+                    "darwin": [],
+                    "linux": [
+                        "sudo apt-get install -y git"
+                    ]
+                }
+            },
+            {
+                "name": "brew",
+                "recipe": {
+                    "linux": [],
+                    "darwin": [
+                        "ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\""
+                    ]
+                }
+
             },
             {
                 "name": "python",
@@ -20,7 +44,10 @@
             "recipe": {
                 "all": [
                     "mkdir -p ~/.vim/autoload ~/.vim/bundle",
-                    "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                    "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim",
+                    "[ -f ~/.vimrc ] || touch ~/.vimrc",
+                    "echo 'execute pathogen#infect()' >> ~/.vimrc",
+                    "echo 'call pathogen#helptags()' >> ~/.vimrc"
                 ]
             }
         },
