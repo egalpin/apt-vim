@@ -37,18 +37,18 @@ export PATH=${PATH}:${HOME}/.vimpkg/bin
 
 # Execute apt-vim init
 cd ${HOME}/apt-vim
-exec python apt-vim init
-#python -i <<EOF
-#import imp
-#import os
-#HOME = os.path.expanduser("~")
-#APT_VIM_DIR = os.path.abspath(os.path.join(HOME, 'apt-vim'))
-#SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
-#BIN_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'bin'))
-#os.environ['PATH'] += os.pathsep + BIN_DIR
-#os.chdir(APT_VIM_DIR)
+#exec python apt-vim init
+python - <<EOF
+import imp
+import os
+HOME = os.path.expanduser("~")
+APT_VIM_DIR = os.path.abspath(os.path.join(HOME, 'apt-vim'))
+SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
+BIN_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'bin'))
+os.environ['PATH'] += os.pathsep + BIN_DIR
+os.chdir(APT_VIM_DIR)
 
-#aptvim = imp.load_source("aptvim", "./apt-vim")
-#aptvim.first_run()
-#EOF
+aptvim = imp.load_source("aptvim", "./apt-vim")
+aptvim.first_run()
+EOF
 cd $start_dir

@@ -3,18 +3,19 @@ import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
-#if __name__ != '__main__':
-    ## We're calling from a import shell script
-    #def stdin_prompt(msg):
-        #sys.stdout.write(msg)
-        #return sys.stdin.readline()
-    #input = stdin_prompt
-#else:
-# Bind input to raw_input for py2/py3 compatibility
-try:
-   input = raw_input
-except NameError:
-   pass
+if __name__ != '__main__':
+    # We're calling from a import shell script
+    def stdin_prompt(msg):
+        sys.stdout.write(msg)
+        sys.stdin = open('/dev/tty')
+        return sys.stdin.readline()
+    input = stdin_prompt
+else:
+    # Bind input to raw_input for py2/py3 compatibility
+    try:
+       input = raw_input
+    except NameError:
+       pass
 
 HOME = os.path.expanduser("~")
 SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
