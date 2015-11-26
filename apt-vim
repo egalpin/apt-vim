@@ -3,11 +3,15 @@ import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
-# Bind input to raw_input for py2/py3 compatibility
-try:
-   input = raw_input
-except NameError:
-   pass
+if __name__ != '__main__':
+    # We're calling from a import shell script
+    input = sys.stdin.read()
+else:
+    # Bind input to raw_input for py2/py3 compatibility
+    try:
+       input = raw_input
+    except NameError:
+       pass
 
 HOME = os.path.expanduser("~")
 SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
@@ -499,9 +503,8 @@ def port_vim_plugins():
 def first_run():
     if os.path.exists(SCRIPT_ROOT_DIR):
         report_fail("There's already an apt-vim root directory at " + \
-                   SCRIPT_ROOT_DIR + "\n" + \
-                    "Delete or move the directory if you want to perform a fresh install",
-                    confirm_continue=False)
+                   SCRIPT_ROOT_DIR + "\n",
+                    "Are you sure you want to continue?")
     if os.path.exists(VIM_ROOT_DIR):
         # Make a backup of the users ~/.vim dir, for safety
         shutil.copytree(VIM_ROOT_DIR, os.path.join(HOME, '.vim.bak'))
@@ -540,14 +543,6 @@ def first_run():
             #'Please manually add `' + os.path.abspath(BIN_DIR) + '` your PATH',
             #confirm_continue=False)
 
-    os.environ['PATH'] += os.pathsep + os.path.abspath(BIN_DIR)
-    missing_dependencies = init()
-    if missing_dependencies:
-        report_fail('Cannot proceed. Missing the following dependencies that could' \
-                + ' not be automatically insatlled:\n' \
-                + str(missing_dependencies),
-                confirm_continue=False)
-
     for path in [SCRIPT_ROOT_DIR,
             VIM_ROOT_DIR,
             BUNDLE_PATH,
@@ -558,6 +553,14 @@ def first_run():
         fix_ownership(path)
 
     os.chmod(SCRIPT_EXE_PATH, 0o744)
+
+    os.environ['PATH'] += os.pathsep + BIN_DIR
+    missing_dependencies = init()
+    if missing_dependencies:
+        report_fail('Cannot proceed. Missing the following dependencies that could' \
+                + ' not be automatically insatlled:\n' \
+                + str(missing_dependencies),
+                confirm_continue=False)
 
     print('Completed successfully')
     sys.exit(0)
