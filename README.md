@@ -27,6 +27,11 @@ _Don't worry:_
  - Any plugins you already have in `~/.vim/bundle` will persist. If an existing plugin was cloned with `git`, the plugin will automatically be tracked with `apt-vim`.
  - Your `.vim` directory will not be altered aside from `bundle` (which is backed up automatically before installation), which will be soft-linked to `~/.vimpkg/bundle`.
 
+##Option 1 - Automatic
+
+    curl -sL https://raw.githubusercontent.com/egalpin/apt-vim/29_ENH_one_touch_setup/install.sh|sh
+
+##Option 2 - Manual
 1. Install Vim
 2. Install Git
 3. Install python 2.7.x or python 3
