@@ -5,6 +5,7 @@ from subprocess import call, check_output, CalledProcessError
 
 if __name__ != '__main__':
     # We're calling from a import shell script
+    # This is kinda hacky, but only gets called by install.sh
     def stdin_prompt(msg):
         sys.stdout.write(msg)
         sys.stdin = open('/dev/tty')
@@ -511,7 +512,15 @@ def first_run():
                     "Are you sure you want to continue?")
     if os.path.exists(VIM_ROOT_DIR):
         # Make a backup of the users ~/.vim dir, for safety
-        shutil.copytree(VIM_ROOT_DIR, os.path.join(HOME, '.vim.bak'))
+        backup_dir = os.path.join(HOME, '.vim.bak')
+        i = 1
+        while os.path.exists(backup_dir + '.' + str(i)):
+            i += 1
+
+        if i:
+            shutil.copytree(VIM_ROOT_DIR, backup_dir + '.' + str(i))
+        else:
+            shutil.copytree(VIM_ROOT_DIR, backup_dir)
     else:
         os.makedirs(VIM_ROOT_DIR)
 
