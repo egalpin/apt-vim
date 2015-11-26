@@ -49,7 +49,5 @@ os.chdir(APT_VIM_DIR)
 
 aptvim = imp.load_source("aptvim", "./apt-vim")
 aptvim.first_run()
-aptvim.ASSUME_YES = True
-aptvim.handle_install(None, None, [ 'https://github.com/tpope/vim-pathogen.git' ])
 EOF
 cd $start_dir
