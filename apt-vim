@@ -9,13 +9,24 @@ try:
 except NameError:
    pass
 
+if __name__ != '__main__':
+    # We're calling from an import/shell script
+    # This is kinda hacky, but only gets called by install.sh
+    def stdin_prompt(msg):
+        sys.stdout.write(msg)
+        sys.stdin = open('/dev/tty')
+        return sys.stdin.readline()
+    input = stdin_prompt
+
+
 HOME = os.path.expanduser("~")
-SCRIPT_ROOT_DIR = os.path.join(HOME, '.vimpkg')
-VIM_ROOT_DIR = os.path.join(HOME, '.vim')
-BUNDLE_PATH = os.path.join(VIM_ROOT_DIR, 'bundle')
-SRC_DIR = os.path.join(SCRIPT_ROOT_DIR, 'src')
-BIN_DIR = os.path.join(SCRIPT_ROOT_DIR, 'bin')
-VIM_CONFIG_PATH = os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json')
+SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
+VIM_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vim'))
+BUNDLE_PATH = os.path.abspath(os.path.join(VIM_ROOT_DIR, 'bundle'))
+SRC_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'src'))
+BIN_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'bin'))
+VIM_CONFIG_PATH = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json'))
+SCRIPT_EXE_PATH = '/usr/local/bin/apt-vim'
 GBL = 'global'
 DPND = 'depends-on'
 NAME = 'name'
@@ -82,6 +93,13 @@ class VimPackage(PkgItem):
         deps = [ Dependency.dict_to_dep(dep) for dep in d[DPND] ]
         return VimPackage(d[PKG_URL], d[NAME], deps, d[RECIPE])
 
+def fix_ownership(path):
+    """Change the owner of the file to SUDO_UID"""
+
+    uid = os.environ.get('SUDO_UID')
+    gid = os.environ.get('SUDO_GID')
+    if uid is not None:
+        os.chown(path, int(uid), int(gid))
 
 def load_vim_config(file_path=VIM_CONFIG_PATH):
     global VIM_CONFIG
@@ -271,8 +289,8 @@ def user_confirm(msg=None):
     msg += ' [y|N]:  '
     num_tries = 0
     while num_tries < 3:
+        user_choice = input(msg).strip().lower()
         try:
-            user_choice = input(msg).strip().lower()
             if strtobool(user_choice):
                 return True
             return False
@@ -456,7 +474,12 @@ def exe_shell_commands(commands=None):
             else:
                 call(shlex.split(com))
         except:
-            return report_fail('Command `' + com + '` failed.')
+            global ASSUME_YES
+            prev_assume = ASSUME_YES
+            ASSUME_YES = False
+            user_response = report_fail('Command `' + com + '` failed.')
+            ASSUME_YES = prev_assume
+            return user_response
     return True
 
 def port_vim_plugins():
@@ -484,9 +507,21 @@ def port_vim_plugins():
             os.chdir(src_dir)
 
 def first_run():
+    if os.path.exists(SCRIPT_ROOT_DIR):
+        report_fail("There's already an apt-vim root directory at " + \
+                   SCRIPT_ROOT_DIR + "\n",
+                    "Are you sure you want to continue?")
     if os.path.exists(VIM_ROOT_DIR):
         # Make a backup of the users ~/.vim dir, for safety
-        shutil.copytree(VIM_ROOT_DIR, os.path.join(HOME, '.vim.bak'))
+        backup_dir = os.path.join(HOME, '.vim.bak')
+        i = 1
+        while os.path.exists(backup_dir + '.' + str(i)):
+            i += 1
+
+        if i:
+            shutil.copytree(VIM_ROOT_DIR, backup_dir + '.' + str(i))
+        else:
+            shutil.copytree(VIM_ROOT_DIR, backup_dir)
     else:
         os.makedirs(VIM_ROOT_DIR)
 
@@ -511,9 +546,37 @@ def first_run():
         report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
             'Please ensure that `apt-vim` is in your PATH',
             confirm_continue=False)
+
     port_vim_plugins()
+
+    #with open('/etc/profile', 'a') as f:
+        #export = 'export PATH=$PATH:' + os.path.abspath(BIN_DIR)
+        #f.write(export)
+    #if not exe_shell_commands(["sudo echo 'export PATH=$PATH:" + os.path.abspath(BIN_DIR) + "' >> /etc/profile"]):
+        #report_fail('Failed to add `' + os.path.abspath(BIN_DIR) + '` to `PATH` via /etc/profile.\n' + \
+            #'Please manually add `' + os.path.abspath(BIN_DIR) + '` your PATH',
+            #confirm_continue=False)
+
+    for path in [SCRIPT_ROOT_DIR,
+            VIM_ROOT_DIR,
+            BUNDLE_PATH,
+            SRC_DIR,
+            BIN_DIR,
+            VIM_CONFIG_PATH,
+            SCRIPT_EXE_PATH]:
+        fix_ownership(path)
+
+    os.chmod(SCRIPT_EXE_PATH, 0o744)
+
+    os.environ['PATH'] += os.pathsep + BIN_DIR
+    missing_dependencies = init()
+    if missing_dependencies:
+        report_fail('Cannot proceed. Missing the following dependencies that could' \
+                + ' not be automatically insatlled:\n' \
+                + str(missing_dependencies),
+                confirm_continue=False)
+
     print('Completed successfully')
-    print('Please ensure that ' + os.path.abspath(BIN_DIR) + ' is in your PATH')
     sys.exit(0)
 
 def verify_bin_in_path():
