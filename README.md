@@ -29,7 +29,7 @@ _Don't worry:_
 
 ##Option 1 - Automatic
 
-    curl -sL https://raw.githubusercontent.com/egalpin/apt-vim/29_ENH_one_touch_setup/install.sh|sh
+    curl -sL https://raw.githubusercontent.com/egalpin/apt-vim/master/install.sh|sh
 
 ##Option 2 - Manual
 1. Install Vim
