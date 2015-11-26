@@ -1,19 +1,11 @@
 #! /usr/bin/env sh
 
-[ -d  "${HOME}/apt-vim" ] || mkdir "${HOME}/apt-vim"
-
 start_dir=$(pwd)
-log_file="${HOME}/apt-vim/install.log"
 
-# Redirect all output to install log
-exec 5<&1
-exec 6<&2
-exec 1> $log_file 2>&1
-
-echo
-
-if grep -q "export PATH=${PATH}:${HOME}/.vimpkg/bin" then
-    echo "export PATH=${PATH}:${HOME}/.vimpkg/bin" >> /etc/profile
+if [ $(sudo grep -c "export PATH=\$PATH:${HOME}/.vimpkg/bin" /etc/profile) -eq 0 ]; then
+    sudo chmod 666 /etc/profile
+    sudo echo "export PATH=\$PATH:${HOME}/.vimpkg/bin" >> /etc/profile
+    sudo chmod 444 /etc/profile
 fi
 
 # Download the apt-vim files
@@ -27,10 +19,10 @@ curl -fLo ${HOME}/apt-vim/vim_config.json \
 [ -f ${HOME}/.vimrc ] || touch ${HOME}/.vimrc
 
 # Make sure vimrc is using pathogen
-if grep -q "execute pathogen#infect()" then
+if [ $(grep -c "execute pathogen#infect()" ${HOME}/.vimrc) -eq 0 ]; then
     echo "execute pathogen#infect()" >> ${HOME}/.vimrc
 fi
-if grep -q "call pathogen#helptags()" then
+if [ $(grep -c "call pathogen#helptags()" ${HOME}/.vimrc) -eq 0 ]; then
     echo "call pathogen#helptags()" >> ${HOME}/.vimrc
 fi
 
@@ -38,9 +30,3 @@ fi
 cd ${HOME}/apt-vim
 sudo python apt-vim init
 cd $start_dir
-
-# Restore stdin / stdout
-exec 1<&5
-exec 2<&6
-
-echo "${PATH}:${HOME}/.vimpkg/bin"
