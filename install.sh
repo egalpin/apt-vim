@@ -1,5 +1,7 @@
 #! /usr/bin/env sh
 
+[ -d  "${HOME}/apt-vim" ] || mkdir "${HOME}/apt-vim"
+
 start_dir=$(pwd)
 log_file="${HOME}/apt-vim/install.log"
 
