@@ -5,7 +5,7 @@ from subprocess import call, check_output, CalledProcessError
 
 if __name__ != '__main__':
     # We're calling from a import shell script
-    input = sys.stdin.read()
+    input = sys.stdin.read
 else:
     # Bind input to raw_input for py2/py3 compatibility
     try:
