@@ -542,6 +542,8 @@ def first_run():
         os.makedirs(BIN_DIR)
     if not os.path.exists(SRC_DIR):
         os.makedirs(SRC_DIR)
+
+    os.chmod(os.path.realpath(__file__), 0o744)
     if not call_silent(['sudo', 'cp', os.path.realpath(__file__), '/usr/local/bin']):
         report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
             'Please ensure that `apt-vim` is in your PATH',
@@ -565,8 +567,6 @@ def first_run():
             VIM_CONFIG_PATH,
             SCRIPT_EXE_PATH]:
         fix_ownership(path)
-
-    os.chmod(SCRIPT_EXE_PATH, 0o744)
 
     os.environ['PATH'] += os.pathsep + BIN_DIR
     missing_dependencies = init()
