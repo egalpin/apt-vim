@@ -37,7 +37,7 @@ export PATH=${PATH}:${HOME}/.vimpkg/bin
 
 # Execute apt-vim init
 cd ${HOME}/apt-vim
-python - <<EOF
+sudo python - <<EOF
 import imp
 import os
 HOME = os.path.expanduser("~")
