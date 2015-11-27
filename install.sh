@@ -16,10 +16,10 @@ fi
 
 # Download the apt-vim files
 curl -fLo ${HOME}/apt-vim/apt-vim --create-dirs \
-    https://raw.githubusercontent.com/egalpin/apt-vim/master/apt-vim
+    https://raw.githubusercontent.com/egalpin/apt-vim/test_object/apt-vim
 
 curl -fLo ${HOME}/apt-vim/vim_config.json \
-    https://raw.githubusercontent.com/egalpin/apt-vim/master/vim_config.json
+    https://raw.githubusercontent.com/egalpin/apt-vim/test_object/vim_config.json
 
 # Add vimrc if there isn't one already
 [ -f ${HOME}/.vimrc ] || touch ${HOME}/.vimrc
