@@ -24,6 +24,16 @@ CWD = os.getcwd()
 PKG_IDENTIFIER = '@vimpkg'
 
 
+def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True):
+    if fail_msg is None:
+        fail_msg = 'Something went wrong...\n'
+    print(fail_msg)
+    if confirm_continue:
+        if self.user_confirm(confirm_msg):
+            return True
+    sys.exit(1)
+
+
 class PkgItem(object):
     def get_recipe(self):
         recipe = None
@@ -72,15 +82,15 @@ class VimPackage(PkgItem):
         return VimPackage(d[PKG_URL], d[NAME], deps, d[RECIPE])
 
 class aptvim(object):
-    def __init__(self, ASSUME_YES=False, JSON_INPUT=False):
+    def __init__(self, ASSUME_YES=False, JSON_INPUT=False, VIM_CONFIG=None, INSTALL_TARGET=None):
         # Bind input to raw_input for py2/py3 compatibility
         try:
            input = raw_input
         except NameError:
            pass
 
-        self.VIM_CONFIG = self.load_vim_config()
-        self.INSTALL_TARGET = self.get_install_target()
+        self.VIM_CONFIG = self.load_vim_config() if VIM_CONFIG is None else VIM_CONFIG
+        self.INSTALL_TARGET = self.get_install_target() if INSTALL_TARGET is None else INSTALL_TARGET
 
         ####### CMD LINE FLAGS #######
         self.ASSUME_YES = ASSUME_YES
@@ -150,7 +160,7 @@ class aptvim(object):
 
     def isInstalled(self, pkg_name, git_url):
         if pkg_name in [ p[NAME] for p in self.VIM_CONFIG[PKGS] ]:
-            self.report_fail('Skipping installed package `' + pkg_name + '`' \
+            report_fail('Skipping installed package `' + pkg_name + '`' \
                     + '\nTo re-install `' + pkg_name + '` run:' \
                     + '\n\t`apt-vim update ' + git_url + '`')
             return True
@@ -166,7 +176,7 @@ class aptvim(object):
         os.chdir(self.INSTALL_TARGET)
         os.chdir(vimpkg.name)
         if not self.exe_shell_commands(vimpkg.get_recipe()):
-            self.report_fail('Failed to intall ' + vimpkg.name)
+            report_fail('Failed to intall ' + vimpkg.name)
         # Change back to the DIR containing this script
         os.chdir(SCRIPT_ROOT_DIR)
 
@@ -183,7 +193,7 @@ class aptvim(object):
 
     def add_new_pkg(self, pkg_name, git_url, skipInstalledCheck=False):
         if not pkg_name:
-            self.report_fail('Each package must have a non-blank name.',
+            report_fail('Each package must have a non-blank name.',
                     confirm_continue=False)
         elif not skipInstalledCheck and self.isInstalled(pkg_name, git_url):
             return None
@@ -212,7 +222,7 @@ class aptvim(object):
                             + '\n\t`apt-vim update ' + git_url + '`')
                 return
             if pkg_name and not self.call_silent(['git', 'clone', git_url, pkg_name]):
-                self.report_fail('Failed to clone `' + pkg_name + '`')
+                report_fail('Failed to clone `' + pkg_name + '`')
         if pkg_name and not os.path.exists(pkg_name):
             os.makedirs(pkg_name)
         if os.path.exists(pkg_name):
@@ -252,7 +262,7 @@ class aptvim(object):
             if not self.check_requirements([dep.name]):
                 commands = dep.get_recipe()
                 if not self.exe_shell_commands(commands):
-                    self.report_fail('Failed to intall ' + pkg_name)
+                    report_fail('Failed to intall ' + pkg_name)
                 else:
                     exe = self.find_executable(SRC_DIR, dep.name)
                     if exe:
@@ -290,15 +300,6 @@ class aptvim(object):
             except:  # Invalid option, retry
                 print('Invalid option. Please enter `Y` or `N` only')
                 num_tries += 1
-        sys.exit(1)
-
-    def report_fail(self, fail_msg=None, confirm_msg=None, confirm_continue=True):
-        if fail_msg is None:
-            fail_msg = 'Something went wrong...\n'
-        print(fail_msg)
-        if confirm_continue:
-            if self.user_confirm(confirm_msg):
-                return True
         sys.exit(1)
 
 
@@ -415,7 +416,7 @@ class aptvim(object):
             with open(file_path, 'w') as f:
                 json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
         except:
-            self.report_fail('Failed to write ' + file_path, confirm_continue=False)
+            report_fail('Failed to write ' + file_path, confirm_continue=False)
 
     def get_pkg_name_from_url(self, git_url):
         pkg_regex = re.compile(r'.*\/([^\/]+).git$')
@@ -469,7 +470,7 @@ class aptvim(object):
             except:
                 prev_assume = self.ASSUME_YES
                 self.ASSUME_YES = False
-                user_response = self.report_fail('Command `' + com + '` failed.')
+                user_response = report_fail('Command `' + com + '` failed.')
                 self.ASSUME_YES = prev_assume
                 return user_response
         return True
@@ -568,7 +569,7 @@ class aptvim(object):
             msg = 'FAILED!\n' + os.path.abspath(BIN_DIR) + ' not found in PATH' + \
                 '\n\nPlease ensure that ' + os.path.abspath(BIN_DIR) + \
                 ' is in your PATH'
-            self.report_fail(msg, confirm_continue=False)
+            report_fail(msg, confirm_continue=False)
 
     def init(self):
         self.verify_bin_in_path()
@@ -668,7 +669,7 @@ class aptvim(object):
         for git_url in pkg_ids:
             vimpkg = self.get_vimpkg(git_url)
             if not vimpkg:
-                self.report_fail('No package with ID `' + git_url + '`')
+                report_fail('No package with ID `' + git_url + '`')
                 continue
             pkg_name = vimpkg.name
             msg = 'Confirm remove package `' + pkg_name + '`'
@@ -693,7 +694,7 @@ class aptvim(object):
         if not pkg_ids:  # If no urls provided, assume updating all packages in vim_config
             pkg_ids = [ p[PKG_URL] for p in self.VIM_CONFIG[PKGS] ]
             if not pkg_ids:
-                self.report_fail('No package URL specified. Exiting', confirm_continue=False)
+                report_fail('No package URL specified. Exiting', confirm_continue=False)
         for git_url in pkg_ids:
             vimpkg = self.get_vimpkg(git_url)
             if vimpkg:
@@ -711,7 +712,7 @@ class aptvim(object):
                     if self.valid_url(git_url):
                         self.handle_install(None, None, [git_url])
                     else:
-                        self.report_fail('`' + git_url + '` is not a valid URL. Skipping install.')
+                        report_fail('`' + git_url + '` is not a valid URL. Skipping install.')
 
 
 

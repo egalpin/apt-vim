@@ -21,6 +21,8 @@ curl -fLo ${HOME}/apt-vim/apt-vim --create-dirs \
 curl -fLo ${HOME}/apt-vim/vim_config.json \
     https://raw.githubusercontent.com/egalpin/apt-vim/test_object/vim_config.json
 
+chown -R ${SUDO_USER}:${SUDO_USER} ${HOME}/apt-vim
+
 # Add vimrc if there isn't one already
 [ -f ${HOME}/.vimrc ] || touch ${HOME}/.vimrc
 
@@ -38,8 +40,8 @@ export PATH=${PATH}:${HOME}/.vimpkg/bin
 # Execute apt-vim init
 cd ${HOME}/apt-vim
 sudo python - <<EOF
-import imp
-import os
+import imp, os
+print('apt-vim setup starting')
 HOME = os.path.expanduser("~")
 APT_VIM_DIR = os.path.abspath(os.path.join(HOME, 'apt-vim'))
 SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
@@ -48,6 +50,7 @@ os.environ['PATH'] += os.pathsep + BIN_DIR
 os.chdir(APT_VIM_DIR)
 
 aptvim = imp.load_source("aptvim", "./apt-vim")
-aptvim.first_run()
+av = aptvim.aptvim(ASSUME_YES=True, VIM_CONFIG='', INSTALL_TARGET='')
+av.first_run()
 EOF
 cd $start_dir
