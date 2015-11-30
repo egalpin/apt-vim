@@ -110,8 +110,13 @@ class aptvim(object):
         return json.loads(json_file)
 
     def get_install_target(self):
+        print(GBL)
+        print(TRG_DIR)
         path = self.VIM_CONFIG[GBL][TRG_DIR]
         path = path.replace('~', HOME)
+        print(path)
+        print('')
+        print('')
         return path
 
     def get_global_requirements(self):
@@ -521,6 +526,7 @@ class aptvim(object):
             os.makedirs(SCRIPT_ROOT_DIR)
         # Copy the config file to ~/.vimpkg/vim_config.json
         shutil.copy('vim_config.json', VIM_CONFIG_PATH)
+        self.VIM_CONFIG = self.load_vim_config()
         install_target = self.get_install_target()
 
         if os.path.lexists(BUNDLE_PATH):

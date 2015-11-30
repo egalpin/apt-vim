@@ -21,8 +21,6 @@ curl -fLo ${HOME}/apt-vim/apt-vim --create-dirs \
 curl -fLo ${HOME}/apt-vim/vim_config.json \
     https://raw.githubusercontent.com/egalpin/apt-vim/test_object/vim_config.json
 
-chown -R ${SUDO_USER}:${SUDO_USER} ${HOME}/apt-vim
-
 # Add vimrc if there isn't one already
 [ -f ${HOME}/.vimrc ] || touch ${HOME}/.vimrc
 
