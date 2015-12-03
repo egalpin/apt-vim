@@ -15,10 +15,10 @@ if [ -f /etc/bash.bashrc ] && [ $(sudo grep -c "export PATH=\$PATH:${HOME}/.vimp
 fi
 
 # Download the apt-vim files
-curl -fLo ${HOME}/apt-vim/apt-vim --create-dirs \
+curl -fSsLo ${HOME}/apt-vim/apt-vim --create-dirs \
     https://raw.githubusercontent.com/egalpin/apt-vim/test_object/apt-vim
 
-curl -fLo ${HOME}/apt-vim/vim_config.json \
+curl -fSsLo ${HOME}/apt-vim/vim_config.json \
     https://raw.githubusercontent.com/egalpin/apt-vim/test_object/vim_config.json
 
 # Add vimrc if there isn't one already
