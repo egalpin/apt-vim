@@ -110,6 +110,8 @@ class aptvim(object):
 
         self.VIM_CONFIG = self.load_vim_config() if VIM_CONFIG is None else VIM_CONFIG
         self.INSTALL_TARGET = self.get_install_target() if INSTALL_TARGET is None else INSTALL_TARGET
+        self.MODES = { 'init': self.first_run, 'install': self.handle_install, 'remove': self.handle_remove, \
+                'delete': self.handle_delete, 'update': self.handle_update, 'add': self.handle_add, 'list': self.print_packages }
 
         ####### CMD LINE FLAGS #######
         self.ASSUME_YES = ASSUME_YES
@@ -509,7 +511,7 @@ class aptvim(object):
             report_fail("There's already an apt-vim root directory at " + \
                        SCRIPT_ROOT_DIR + "\n",
                         "Are you sure you want to continue?",
-                        ASSUME_YES=self.ASSUME_YES)
+                        ASSUME_YES=False)
         if os.path.exists(VIM_ROOT_DIR):
             # Make a backup of the users ~/.vim dir, for safety
             backup_dir = os.path.join(HOME, '.vim.bak')
@@ -731,22 +733,20 @@ class aptvim(object):
 
 
     def process_cmd_args(self):
-        MODES = { 'init': self.first_run, 'install': self.handle_install, 'remove': self.handle_remove, \
-                'delete': self.handle_delete, 'update': self.handle_update, 'add': self.handle_add, 'list': self.print_packages }
         argv = sys.argv[1:]
         if not argv:
             self.usage()
         mode = argv[0].lower()
-        if mode not in MODES:
+        if mode not in self.MODES:
             self.usage()
         else:
             if mode == 'init':
-                MODES[mode]()
+                self.MODES[mode]()
                 return
 
             missing_dependencies = self.init()
             if mode == 'list':
-                MODES[mode]()
+                self.MODES[mode]()
                 sys.exit(0)
             if missing_dependencies:
                 report_fail('Cannot proceed. Missing the following dependencies that could' \
@@ -761,10 +761,10 @@ class aptvim(object):
                     self.ASSUME_YES = True
                 if opt in ('-j', '--json'):
                     self.JSON_INPUT = True
-            MODES[mode](argv[1:], options, remainder)
+            self.MODES[mode](argv[1:], options, remainder)
 
     def usage(self):
-        print('Valid modes: ', str(sorted(list(MODES.keys()), key=lambda s: s.lower())), '\n')
+        print('Valid modes: ', str(sorted(list(self.MODES.keys()), key=lambda s: s.lower())), '\n')
         sys.exit(1)
 
     def main(self):
