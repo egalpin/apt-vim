@@ -476,10 +476,7 @@ class aptvim(object):
                 else:
                     call(shlex.split(com))
             except:
-                prev_assume = self.ASSUME_YES
-                self.ASSUME_YES = False
                 user_response = report_fail('Command `' + com + '` failed.', ASSUME_YES=self.ASSUME_YES)
-                self.ASSUME_YES = prev_assume
                 return user_response
         return True
 
