@@ -15,10 +15,10 @@ if [ -f /etc/bash.bashrc ] && [ $(sudo grep -c "export PATH=\$PATH:${HOME}/.vimp
 fi
 
 # Download the apt-vim files
-curl -fLo ${HOME}/apt-vim/apt-vim --create-dirs \
+curl -fSsLo ${HOME}/apt-vim/apt-vim --create-dirs \
     https://raw.githubusercontent.com/egalpin/apt-vim/master/apt-vim
 
-curl -fLo ${HOME}/apt-vim/vim_config.json \
+curl -fSsLo ${HOME}/apt-vim/vim_config.json \
     https://raw.githubusercontent.com/egalpin/apt-vim/master/vim_config.json
 
 # Add vimrc if there isn't one already
@@ -38,8 +38,8 @@ export PATH=${PATH}:${HOME}/.vimpkg/bin
 # Execute apt-vim init
 cd ${HOME}/apt-vim
 sudo python - <<EOF
-import imp
-import os
+import imp, os
+print('apt-vim setup starting')
 HOME = os.path.expanduser("~")
 APT_VIM_DIR = os.path.abspath(os.path.join(HOME, 'apt-vim'))
 SCRIPT_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vimpkg'))
@@ -48,6 +48,8 @@ os.environ['PATH'] += os.pathsep + BIN_DIR
 os.chdir(APT_VIM_DIR)
 
 aptvim = imp.load_source("aptvim", "./apt-vim")
-aptvim.first_run()
+av = aptvim.aptvim(ASSUME_YES=True, VIM_CONFIG='', INSTALL_TARGET='')
+av.first_run()
+av.handle_install(None, None, None)
 EOF
 cd $start_dir

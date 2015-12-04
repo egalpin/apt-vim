@@ -20,16 +20,6 @@
                 }
             },
             {
-                "name": "pathogen",
-                "pkg-url": "https://github.com/tpope/vim-pathogen.git",
-                "recipe": {
-                    "all": [
-                        "mkdir -p ~/.vim/autoload ~/.vim/bundle",
-                        "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
-                    ]
-                }
-            },
-            {
                 "name": "brew",
                 "recipe": {
                     "linux": [],
@@ -47,6 +37,17 @@
         "install-target": "~/.vimpkg/bundle"
     },
     "packages": [
+        {
+            "depends-on": [],
+            "name": "pathogen",
+            "pkg-url": "https://github.com/tpope/vim-pathogen.git",
+            "recipe": {
+                "all": [
+                    "mkdir -p ~/.vim/autoload",
+                    "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                ]
+            }
+        },
         {
             "depends-on": [
                 {
