@@ -564,8 +564,7 @@ class aptvim(object):
                     confirm_continue=False,
                     ASSUME_YES=self.ASSUME_YES)
 
-        print('Completed successfully')
-        sys.exit(0)
+        print('Completed setup successfully')
 
     def verify_bin_in_path(self):
         if '.vimpkg/bin' not in os.environ['PATH']:
