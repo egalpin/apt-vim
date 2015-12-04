@@ -24,8 +24,8 @@
                 "pkg-url": "https://github.com/tpope/vim-pathogen.git",
                 "recipe": {
                     "all": [
-                        "mkdir -p ~/.vim/autoload ~/.vim/bundle",
-                        "curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+                        "[ -d ~/.vim/autoload ] || mkdir -p ~/.vim/autoload",
+                        "[ -f ~/.vim/autoload/pathogen.vim ] || curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
                     ]
                 }
             },
