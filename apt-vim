@@ -102,12 +102,6 @@ class VimPackage(PkgItem):
 
 class aptvim(object):
     def __init__(self, ASSUME_YES=False, JSON_INPUT=False, VIM_CONFIG=None, INSTALL_TARGET=None):
-        # Bind input to raw_input for py2/py3 compatibility
-        try:
-           input = raw_input
-        except NameError:
-           pass
-
         self.VIM_CONFIG = self.load_vim_config() if VIM_CONFIG is None else VIM_CONFIG
         self.INSTALL_TARGET = self.get_install_target() if INSTALL_TARGET is None else INSTALL_TARGET
         self.MODES = { 'init': self.first_run, 'install': self.handle_install, 'remove': self.handle_remove, \
@@ -778,6 +772,12 @@ if __name__ != '__main__':
     input = stdin_prompt
 
 if __name__ == '__main__':
+    # Bind input to raw_input for py2/py3 compatibility
+    try:
+       input = raw_input
+    except NameError:
+       pass
+
     apt_vim = aptvim()
     apt_vim.main()
     sys.exit(0)
