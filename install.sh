@@ -50,5 +50,6 @@ os.chdir(APT_VIM_DIR)
 aptvim = imp.load_source("aptvim", "./apt-vim")
 av = aptvim.aptvim(ASSUME_YES=True, VIM_CONFIG='', INSTALL_TARGET='')
 av.first_run()
+av.handle_install(None, None, None)
 EOF
 cd $start_dir
