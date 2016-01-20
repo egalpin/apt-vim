@@ -39,7 +39,9 @@ _Note: you may need to close and reopen your terminal_
 4. Clone this repo:  `git clone https://github.com/egalpin/apt-vim.git`
 5. Change to the cloned directory
   - `cd apt-vim`
-5. Run `./apt-vim init`
+5. Run `sudo ./apt-vim init`
+  - Requires `sudo` to copy the `apt-vim` script to `/usr/local/bin`
+  - See [apt-vim:550](https://github.com/egalpin/apt-vim/blame/master/apt-vim#L550)
 6. Add `~/.vimpkg/bin` to your `PATH`
   - This can be done by adding `export PATH=$PATH:~/.vimpkg/bin` to `~/.bashrc` or `~/.bash_profile` or equivalent shell configuration file
   - `~/.vimpkg/bin` is where all Vim plugin dependencies will be installed
