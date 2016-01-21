@@ -29,7 +29,7 @@ _Don't worry:_
 
 ##Option 1 - Automatic
 
-    curl -sL https://raw.githubusercontent.com/egalpin/apt-vim/master/install.sh|sh
+    curl -sL https://raw.githubusercontent.com/egalpin/apt-vim/master/install.sh | sh
 _Note: you may need to close and reopen your terminal_
 
 ##Option 2 - Manual
