@@ -584,13 +584,26 @@ class aptvim(object):
                 ' is in your PATH'
             report_fail(msg, confirm_continue=False, ASSUME_YES=self.ASSUME_YES)
 
+    def confirm_install_ok(self, install_requester, commands):
+        confirm_string = 'Package `' + install_requester + '` wants to run the following commands:\n'
+        command_string = ''
+        for command in commands:
+            command_string += command + '\n'
+        confirm_string += command_string + 'Is this ok?'
+
+        if self.ASSUME_YES or user_confirm(confirm_string, ASSUME_YES=self.ASSUME_YES):
+            return True
+        return False
+
     def init(self):
         self.verify_bin_in_path()
         missing_deps = []
         deps = self.VIM_CONFIG[GBL][DPND]
         for dep in deps:
             dep = Dependency.dict_to_dep(dep, ASSUME_YES=self.ASSUME_YES)
-            if not self.check_requirements([dep.name]):
+            if not self.check_requirements([dep.name]) and \
+                    (len(dep.get_recipe(ASSUME_YES=self.ASSUME_YES)) > 0 and self.confirm_install_ok(dep.name, dep.get_recipe(ASSUME_YES=self.ASSUME_YES))):
+                print('Attempting to install `' + dep.name + '`')
                 if not self.exe_shell_commands(dep.get_recipe(ASSUME_YES=self.ASSUME_YES)):
                     missing_deps.append(dep.name)
         return missing_deps

@@ -5,7 +5,7 @@ bin_string="export PATH=${PATH}:${HOME}/.vimpkg/bin"
 
 # Download the apt-vim files
 curl -fSsLo ${HOME}/apt-vim/apt-vim --create-dirs \
-    https://raw.githubusercontent.com/egalpin/apt-vim/39_bug_remove_sudo_dependence/apt-vim
+    https://raw.githubusercontent.com/egalpin/apt-vim/master/apt-vim
 
 curl -fSsLo ${HOME}/apt-vim/vim_config.json \
     https://raw.githubusercontent.com/egalpin/apt-vim/master/vim_config.json
@@ -29,7 +29,6 @@ already_present=false
 for rc in bashrc zshrc bash_profile; do
   if [ -s "$HOME/.$rc" ]; then
     if grep -q "$bin_string" "$HOME/.$rc"; then
-      printf "== apt-vim PATH already exported in '~/.$rc'\n"
       already_present=true
     else
       printf "\n$bin_string\n" >> "$HOME/.$rc"
@@ -60,6 +59,7 @@ python_result=$?
 
 cd $start_dir
 
+echo
 if [ "$python_result" -ne 0 ]; then
     echo "== Error:"
     echo "   Installation failed."
