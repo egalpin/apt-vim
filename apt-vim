@@ -10,7 +10,7 @@ BUNDLE_PATH = os.path.abspath(os.path.join(VIM_ROOT_DIR, 'bundle'))
 SRC_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'src'))
 BIN_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'bin'))
 VIM_CONFIG_PATH = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json'))
-SCRIPT_EXE_PATH = '/usr/local/bin/apt-vim'
+SCRIPT_EXE_PATH = os.path.abspath(os.path.join(BIN_DIR, 'apt-vim'))
 GBL = 'global'
 DPND = 'depends-on'
 NAME = 'name'
@@ -547,11 +547,11 @@ class aptvim(object):
             os.makedirs(SRC_DIR)
 
 
-        # if not self.call_silent(['sudo', 'cp', os.path.realpath(__file__), '/usr/local/bin']):
-            # report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
-                # 'Please ensure that `apt-vim` is in your PATH',
-                # confirm_continue=False,
-                # ASSUME_YES=self.ASSUME_YES)
+        if not self.call_silent(['cp', os.path.realpath(__file__), SCRIPT_EXE_PATH]):
+            report_fail('Failed to copy `apt-vim` to `PATH`\n' + \
+                'Please ensure that `apt-vim` is in your PATH',
+                confirm_continue=False,
+                ASSUME_YES=self.ASSUME_YES)
 
         self.port_vim_plugins()
 
