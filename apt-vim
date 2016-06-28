@@ -547,11 +547,11 @@ class aptvim(object):
             os.makedirs(SRC_DIR)
 
 
-        if not self.call_silent(['sudo', 'cp', os.path.realpath(__file__), '/usr/local/bin']):
-            report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
-                'Please ensure that `apt-vim` is in your PATH',
-                confirm_continue=False,
-                ASSUME_YES=self.ASSUME_YES)
+        # if not self.call_silent(['sudo', 'cp', os.path.realpath(__file__), '/usr/local/bin']):
+            # report_fail('Failed to copy `apt-vim` to `/usr/local/bin`\n' + \
+                # 'Please ensure that `apt-vim` is in your PATH',
+                # confirm_continue=False,
+                # ASSUME_YES=self.ASSUME_YES)
 
         self.port_vim_plugins()
 
