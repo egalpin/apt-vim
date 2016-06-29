@@ -41,7 +41,7 @@ _Note: you may need to close and reopen your terminal_
   - `cd apt-vim`
 5. Run `./apt-vim init`
   - You may be prompted for `sudo` password during installation if you are missing dependencies such as `git` or `vim`
-  - See [apt-vim:550](https://github.com/egalpin/apt-vim/blame/master/apt-vim#L550)
+  - See [vim_config:9](https://github.com/egalpin/apt-vim/blob/master/vim_config.json#L9)
 6. Add `~/.vimpkg/bin` to your `PATH`
   - This can be done by adding `export PATH=$PATH:~/.vimpkg/bin` to `~/.bashrc` or `~/.bash_profile` or equivalent shell configuration file
   - `~/.vimpkg/bin` is where all Vim plugin dependencies will be installed
