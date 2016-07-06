@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast
+import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast, signal
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
@@ -22,6 +22,26 @@ OS = 'os'
 HOST_OS = platform.system().lower()
 CWD = os.getcwd()
 PKG_IDENTIFIER = '@vimpkg'
+
+def sigint_handler(signal, frame):
+    sys.exit(1)
+
+def exists_in_path(program):
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return True
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return True
+
+    return False
 
 def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True, ASSUME_YES=False):
     if fail_msg is None:
@@ -201,8 +221,15 @@ class aptvim(object):
             self.clone_pkg(vimpkg.pkg_url, vimpkg.name)
         os.chdir(self.INSTALL_TARGET)
         os.chdir(vimpkg.name)
-        if not self.exe_shell_commands(vimpkg.get_recipe(ASSUME_YES=self.ASSUME_YES)):
-            report_fail('Failed to intall ' + vimpkg.name,
+        commands = vimpkg.get_recipe(ASSUME_YES=self.ASSUME_YES)
+        if len(commands) > 0:
+            print('Attempting to install `' + vimpkg.name + '`')
+        install_result = self.exe_shell_commands(commands, vimpkg.name)
+        print('install_result: ' + str(install_result))
+        if install_result is None:
+            self.remove_pkg(vimpkg)
+        elif install_result == False:
+            report_fail('Failed to install ' + vimpkg.name,
                     ASSUME_YES=self.ASSUME_YES)
         # Change back to the DIR containing this script
         os.chdir(SCRIPT_ROOT_DIR)
@@ -290,7 +317,7 @@ class aptvim(object):
         for dep in dependencies:
             if not self.check_requirements([dep.name]):
                 commands = dep.get_recipe(ASSUME_YES=self.ASSUME_YES)
-                if not self.exe_shell_commands(commands):
+                if not self.exe_shell_commands(commands, dep.name):
                     report_fail('Failed to intall ' + pkg_name, ASSUME_YES=self.ASSUME_YES)
                 else:
                     exe = self.find_executable(SRC_DIR, dep.name)
@@ -467,12 +494,13 @@ class aptvim(object):
             return False
         return True
 
-    def usage(self):
-        pass
-
-    def exe_shell_commands(self, commands=None):
+    def exe_shell_commands(self, commands=None, command_requester='Unknown'):
         if commands is None:
             commands = []
+        if len(commands) > 0 and \
+                not self.confirm_install_ok(command_requester, commands):
+            print('Skipping commands by user request.')
+            return None
         for com in commands:
             com = com.replace('~', HOME)
             try:
@@ -567,7 +595,7 @@ class aptvim(object):
         os.chmod(SCRIPT_EXE_PATH, 0o744)
 
         os.environ['PATH'] += os.pathsep + BIN_DIR
-        missing_dependencies = self.init()
+        missing_dependencies = self.dep_check()
         if missing_dependencies:
             report_fail('Cannot proceed. Missing the following dependencies that could' \
                     + ' not be automatically insatlled:\n' \
@@ -585,26 +613,35 @@ class aptvim(object):
             report_fail(msg, confirm_continue=False, ASSUME_YES=self.ASSUME_YES)
 
     def confirm_install_ok(self, install_requester, commands):
-        confirm_string = 'Package `' + install_requester + '` wants to run the following commands:\n'
+        if self.ASSUME_YES:
+            return True
+        prompt_command_string = 'command'
+        if len(commands) > 1:
+            prompt_command_string += 's'
+
+        confirm_string = 'Package `' + install_requester + \
+                '` wants to run the following ' + prompt_command_string + \
+                ' from the directory "' + os.getcwd() + '"\n'
         command_string = ''
         for command in commands:
-            command_string += command + '\n'
+            command_string += '    ' + command + '\n'
         confirm_string += command_string + 'Is this ok?'
 
-        if self.ASSUME_YES or user_confirm(confirm_string, ASSUME_YES=self.ASSUME_YES):
+        if user_confirm(confirm_string, ASSUME_YES=self.ASSUME_YES):
             return True
         return False
 
-    def init(self):
+    def dep_check(self):
         self.verify_bin_in_path()
         missing_deps = []
         deps = self.VIM_CONFIG[GBL][DPND]
         for dep in deps:
             dep = Dependency.dict_to_dep(dep, ASSUME_YES=self.ASSUME_YES)
-            if not self.check_requirements([dep.name]) and \
-                    (len(dep.get_recipe(ASSUME_YES=self.ASSUME_YES)) > 0 and self.confirm_install_ok(dep.name, dep.get_recipe(ASSUME_YES=self.ASSUME_YES))):
-                print('Attempting to install `' + dep.name + '`')
-                if not self.exe_shell_commands(dep.get_recipe(ASSUME_YES=self.ASSUME_YES)):
+            if not exists_in_path(dep.name):
+                commands = dep.get_recipe(ASSUME_YES=self.ASSUME_YES)
+                if len(commands) > 0:
+                    print('Attempting to install `' + dep.name + '`')
+                if not self.exe_shell_commands(commands, dep.name):
                     missing_deps.append(dep.name)
         return missing_deps
 
@@ -719,8 +756,10 @@ class aptvim(object):
         return self.__handle_remove(argv, options, pkg_ids, delete=True)
 
     def handle_update(self, argv, options, pkg_ids):
-        if not pkg_ids:  # If no urls provided, assume updating all packages in vim_config
-            pkg_ids = [ p[PKG_URL] for p in self.VIM_CONFIG[PKGS] ]
+        if not pkg_ids:  # If no urls provided, assume updating all INSTALLED packages in vim_config
+            installed_packages = self.get_installed_pkgs()
+            pkg_ids = [ p[PKG_URL] for p in self.VIM_CONFIG[PKGS] if \
+                    p[NAME] in installed_packages ]
             if not pkg_ids:
                 report_fail('No package URL specified. Exiting', confirm_continue=False,
                         ASSUME_YES=self.ASSUME_YES)
@@ -758,7 +797,7 @@ class aptvim(object):
                 self.MODES[mode]()
                 return
 
-            missing_dependencies = self.init()
+            missing_dependencies = self.dep_check()
             if mode == 'list':
                 self.MODES[mode]()
                 sys.exit(0)
@@ -778,12 +817,16 @@ class aptvim(object):
             self.MODES[mode](argv[1:], options, remainder)
 
     def usage(self):
-        print('Valid modes: ', str(sorted(list(self.MODES.keys()), key=lambda s: s.lower())), '\n')
+        print('Valid modes: ' + str(sorted(list(self.MODES.keys()), key=lambda s: s.lower())) + '\n')
         sys.exit(1)
 
     def main(self):
         self.process_cmd_args()
         print('Completed successfully!')
+
+
+
+signal.signal(signal.SIGINT, sigint_handler)
 
 if __name__ != '__main__':
     # We're calling from an import/shell script
