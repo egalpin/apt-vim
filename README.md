@@ -54,6 +54,7 @@ _Note: you may need to close and reopen your terminal_
   - You will be walked through a series of prompts to see how `apt-vim` works
   - This will clone and install [Pathogen](https://github.com/tpope/vim-pathogen) and, as an example, [Tagbar](https://github.com/majutsushi/tagbar) and its dependency, `ctags`
   - You **must** install [Pathogen](https://github.com/tpope/vim-pathogen) for `apt-vim` to work.
+  - [Tagbar](https://github.com/majutsushi/tagbar) is an optional example which you can deny if desired
 
 
 #Usage
