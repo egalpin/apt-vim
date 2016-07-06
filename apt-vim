@@ -26,6 +26,7 @@ PKG_IDENTIFIER = '@vimpkg'
 def sigint_handler(signal, frame):
     sys.exit(1)
 
+# Thanks to stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def exists_in_path(program):
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -215,7 +216,8 @@ class aptvim(object):
     def install_pkg(self, vimpkg, skip_clone=False):
         self.status_update(vimpkg.name)
         # Install dependencies of package
-        self.install_dependencies(vimpkg)
+        if self.install_dependencies(vimpkg) is None:
+            return
         # Clone the plugin and run any post-install commands
         if not skip_clone:
             self.clone_pkg(vimpkg.pkg_url, vimpkg.name)
@@ -225,7 +227,6 @@ class aptvim(object):
         if len(commands) > 0:
             print('Attempting to install `' + vimpkg.name + '`')
         install_result = self.exe_shell_commands(commands, vimpkg.name)
-        print('install_result: ' + str(install_result))
         if install_result is None:
             self.remove_pkg(vimpkg)
         elif install_result == False:
@@ -307,25 +308,30 @@ class aptvim(object):
     def install_dependencies(self, vimpkg):
         pkg_name = vimpkg.name
         dependencies = vimpkg.depends_on
-        if dependencies:
+        if dependencies and len(dependencies) > 0:
             # Change to directory with dependency source
             os.chdir(SRC_DIR)
             if not os.path.exists(pkg_name):
                 os.makedirs(pkg_name)
             os.chdir(pkg_name)
 
-        for dep in dependencies:
-            if not self.check_requirements([dep.name]):
-                commands = dep.get_recipe(ASSUME_YES=self.ASSUME_YES)
-                if not self.exe_shell_commands(commands, dep.name):
-                    report_fail('Failed to intall ' + pkg_name, ASSUME_YES=self.ASSUME_YES)
+            for dep in dependencies:
+                if not self.check_requirements([dep.name]):
+                    commands = dep.get_recipe(ASSUME_YES=self.ASSUME_YES)
+                    install_result = self.exe_shell_commands(commands, dep.name)
+                    if install_result is None:
+                        return None
+                    if not self.exe_shell_commands(commands, dep.name):
+                        report_fail('Failed to intall ' + pkg_name, ASSUME_YES=self.ASSUME_YES)
+                        return False
+                    else:
+                        exe = self.find_executable(SRC_DIR, dep.name)
+                        if exe:
+                            dst = os.path.join(BIN_DIR, dep.name)
+                            shutil.copyfile(exe, dst)
                 else:
-                    exe = self.find_executable(SRC_DIR, dep.name)
-                    if exe:
-                        dst = os.path.join(BIN_DIR, dep.name)
-                        shutil.copyfile(exe, dst)
-            else:
-                print('`' + dep.name + '` already in PATH')
+                    print('`' + dep.name + '` already in PATH')
+        return True
 
     def find_executable(self, path, filename):
         executable = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
@@ -822,7 +828,7 @@ class aptvim(object):
 
     def main(self):
         self.process_cmd_args()
-        print('Completed successfully!')
+        print('Completed successfully.')
 
 
 
