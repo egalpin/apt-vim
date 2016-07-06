@@ -47,8 +47,13 @@ _Note: you may need to close and reopen your terminal_
   - `~/.vimpkg/bin` is where all Vim plugin dependencies will be installed
 7. Add `execute pathogen#infect()` and then `call pathogen#helptags()` to `~/.vimrc`
   - If `~/.vimrc` doesn't exist, create a new `~/.vimrc` file containing at least the above 2 commands
-8. Run `apt-vim install -y`
+8. `source` your shell profile.
+  - This will update the `PATH` variable in the current shell
+  - Future shells/logins will contain the updated `PATH` automatically
+9. Run `apt-vim install`
+  - You will be walked through a series of prompts to see how `apt-vim` works
   - This will clone and install [Pathogen](https://github.com/tpope/vim-pathogen) and, as an example, [Tagbar](https://github.com/majutsushi/tagbar) and its dependency, `ctags`
+  - You **must** install [Pathogen](https://github.com/tpope/vim-pathogen) for `apt-vim` to work.
 
 
 #Usage
