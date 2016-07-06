@@ -217,6 +217,7 @@ class aptvim(object):
         self.status_update(vimpkg.name)
         # Install dependencies of package
         if self.install_dependencies(vimpkg) is None:
+            # User denied dependency installation recipe
             return
         # Clone the plugin and run any post-install commands
         if not skip_clone:
@@ -228,6 +229,8 @@ class aptvim(object):
             print('Attempting to install `' + vimpkg.name + '`')
         install_result = self.exe_shell_commands(commands, vimpkg.name)
         if install_result is None:
+            # User denied post-clone installation recipe
+            # Rollback the cloned content
             self.remove_pkg(vimpkg)
         elif install_result == False:
             report_fail('Failed to install ' + vimpkg.name,
