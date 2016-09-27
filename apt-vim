@@ -419,7 +419,7 @@ class aptvim(object):
             i = 1;
             dep_name = input('Name for dependency ' + str(i) + ':  ')
             while dep_name != "":
-                depends.append(__get_depend(dep_name))
+                depends.append(self.__get_depend(dep_name))
                 i += 1
                 dep_name = input('Name for dependency ' + str(i) + ':  ')
         return depends
