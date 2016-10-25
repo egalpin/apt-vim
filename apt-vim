@@ -472,7 +472,9 @@ class aptvim(object):
         match = pkg_regex.match(git_url)
         if match:
             return match.group(1)
-        return ''
+        # Exit execution, no name can be determined from the URL
+        report_fail('Invalid git URL (should end with ".git"): ' + git_url, confirm_continue=False,
+                ASSUME_YES=self.ASSUME_YES)
 
     def check_requirements(self, requirements=None):
         if requirements is None:
