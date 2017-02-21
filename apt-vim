@@ -1,5 +1,15 @@
 #!/usr/bin/env python
-import json, sys, os, re, shutil, shlex, getopt, platform, stat, ast, signal
+import json
+import sys
+import os
+import re
+import shutil
+import shlex
+import getopt
+import platform
+import stat
+import ast
+import signal
 from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
@@ -9,7 +19,8 @@ VIM_ROOT_DIR = os.path.abspath(os.path.join(HOME, '.vim'))
 BUNDLE_PATH = os.path.abspath(os.path.join(VIM_ROOT_DIR, 'bundle'))
 SRC_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'src'))
 BIN_DIR = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'bin'))
-VIM_CONFIG_PATH = os.path.abspath(os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json'))
+VIM_CONFIG_PATH = os.path.abspath(
+    os.path.join(SCRIPT_ROOT_DIR, 'vim_config.json'))
 SCRIPT_EXE_PATH = os.path.abspath(os.path.join(BIN_DIR, 'apt-vim'))
 GBL = 'global'
 DPND = 'depends-on'
@@ -23,10 +34,13 @@ HOST_OS = platform.system().lower()
 CWD = os.getcwd()
 PKG_IDENTIFIER = '@vimpkg'
 
+
 def sigint_handler(signal, frame):
     sys.exit(1)
 
-# Thanks to stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+
+# Thanks to
+# stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def exists_in_path(program):
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -41,8 +55,8 @@ def exists_in_path(program):
             exe_file = os.path.join(path, program)
             if is_exe(exe_file):
                 return True
-
     return False
+
 
 def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True, ASSUME_YES=False):
     if fail_msg is None:
@@ -52,6 +66,7 @@ def report_fail(fail_msg=None, confirm_msg=None, confirm_continue=True, ASSUME_Y
         if user_confirm(confirm_msg, ASSUME_YES=ASSUME_YES):
             return True
     sys.exit(1)
+
 
 def user_confirm(msg=None, ASSUME_YES=False):
     if ASSUME_YES:
@@ -74,6 +89,7 @@ def user_confirm(msg=None, ASSUME_YES=False):
 
 
 class PkgItem(object):
+
     def get_recipe(self, ASSUME_YES=False):
         recipe = None
         if HOST_OS in self.recipe:
@@ -81,20 +97,24 @@ class PkgItem(object):
         elif 'all' in self.recipe:
             recipe = self.recipe['all']
         if self.recipe and HOST_OS not in self.recipe and recipe is None:
-            report_fail('No recipe for `' + self.name + '` for your OS', ASSUME_YES=ASSUME_YES)
-        if recipe == None:
+            report_fail('No recipe for `' + self.name +
+                        '` for your OS', ASSUME_YES=ASSUME_YES)
+        if recipe is None:
             recipe = []
         return recipe
 
 
 class Dependency(PkgItem):
-    def __init__(self, name='dep', recipe={}, ASSUME_YES=False):
+
+    def __init__(self, name='dep', recipe=None, ASSUME_YES=False):
         self.name = name
+        if recipe is None:
+            recipe = {}
         self.recipe = recipe
 
     def to_dict(self):
         # Convert python variable names to json variable names
-        return {k.replace('_', '-'): v for k,v in list(self.__dict__.items())}
+        return {k.replace('_', '-'): v for k, v in list(self.__dict__.items())}
 
     @staticmethod
     def dict_to_dep(d, ASSUME_YES=False):
@@ -102,36 +122,43 @@ class Dependency(PkgItem):
 
 
 class VimPackage(PkgItem):
-    def __init__(self, pkg_url='', name='', depends_on=[], recipe={}, ASSUME_YES=False):
+
+    def __init__(self, pkg_url='', name='', depends_on=None, recipe=None, ASSUME_YES=False):
         self.pkg_url = pkg_url
         self.name = name
+        if depends_on is None:
+            depends_on = []
         self.depends_on = depends_on
+        if recipe is None:
+            recipe = {}
         self.recipe = recipe
 
     def to_dict(self):
         # Convert python variable names to json variable names
-        d = {k.replace('_', '-'): v for k,v in list(self.__dict__.items())}
-        deps = [ dep.to_dict() for dep in self.depends_on ]
+        d = {k.replace('_', '-'): v for k, v in list(self.__dict__.items())}
+        deps = [dep.to_dict() for dep in self.depends_on]
         d[DPND] = deps
         return d
 
     @staticmethod
     def dict_to_vimpkg(d, ASSUME_YES=False):
-        deps = [ Dependency.dict_to_dep(dep, ASSUME_YES=ASSUME_YES) for dep in d[DPND] ]
+        deps = [Dependency.dict_to_dep(
+            dep, ASSUME_YES=ASSUME_YES) for dep in d[DPND]]
         return VimPackage(d[PKG_URL], d[NAME], deps, d[RECIPE], ASSUME_YES=ASSUME_YES)
 
 
 class aptvim(object):
+
     def __init__(self, ASSUME_YES=False, JSON_INPUT=False, VIM_CONFIG=None, INSTALL_TARGET=None):
         self.VIM_CONFIG = self.load_vim_config() if VIM_CONFIG is None else VIM_CONFIG
-        self.INSTALL_TARGET = self.get_install_target() if INSTALL_TARGET is None else INSTALL_TARGET
-        self.MODES = { 'init': self.first_run, 'install': self.handle_install, 'remove': self.handle_remove, \
-                'delete': self.handle_delete, 'update': self.handle_update, 'add': self.handle_add, 'list': self.print_packages }
+        self.INSTALL_TARGET = self.get_install_target(
+        ) if INSTALL_TARGET is None else INSTALL_TARGET
+        self.MODES = {'init': self.first_run, 'install': self.handle_install, 'remove': self.handle_remove,
+                      'delete': self.handle_delete, 'update': self.handle_update, 'add': self.handle_add, 'list': self.print_packages}
 
         ####### CMD LINE FLAGS #######
         self.ASSUME_YES = ASSUME_YES
         self.JSON_INPUT = JSON_INPUT
-
 
     def fix_ownership(self, path):
         """Change the owner of the file to SUDO_UID"""
@@ -148,11 +175,12 @@ class aptvim(object):
             try:
                 # Check if there is a vim_config.json in the directory the script
                 # is called from. Can happen on initial setup
-                file_path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'vim_config.json')
+                file_path = os.path.join(os.path.dirname(
+                    os.path.realpath(sys.argv[0])), 'vim_config.json')
                 json_file = open(file_path).read()
             except IOError:
-                print('No valid vim_config.json found. Please ensure a valid' \
-                        + ' config exists in ' + VIM_CONFIG_PATH)
+                print('No valid vim_config.json found. Please ensure a valid'
+                      + ' config exists in ' + VIM_CONFIG_PATH)
                 sys.exit(1)
         return json.loads(json_file)
 
@@ -162,13 +190,13 @@ class aptvim(object):
         return path
 
     def get_global_requirements(self):
-        return [ req[NAME] for req in self.VIM_CONFIG[GBL][DPND] ]
+        return [req[NAME] for req in self.VIM_CONFIG[GBL][DPND]]
 
     def get_vimpkg(self, pkg_id):
-        pkg_by_url = [ p for p in self.VIM_CONFIG[PKGS] if p[PKG_URL] == pkg_id ]
+        pkg_by_url = [p for p in self.VIM_CONFIG[PKGS] if p[PKG_URL] == pkg_id]
         if pkg_by_url:
             return VimPackage.dict_to_vimpkg(pkg_by_url[0], ASSUME_YES=self.ASSUME_YES)
-        pkg_by_name = [ p for p in self.VIM_CONFIG[PKGS] if p[NAME] == pkg_id ]
+        pkg_by_name = [p for p in self.VIM_CONFIG[PKGS] if p[NAME] == pkg_id]
         if pkg_by_name:
             return VimPackage.dict_to_vimpkg(pkg_by_name[0], ASSUME_YES=self.ASSUME_YES)
         return None
@@ -206,10 +234,10 @@ class aptvim(object):
         print('\nConfiguring and installing `' + pkg_name + '`')
 
     def isInstalled(self, pkg_name, git_url):
-        if pkg_name in [ p[NAME] for p in self.VIM_CONFIG[PKGS] ]:
-            report_fail('Skipping installed package `' + pkg_name + '`' \
-                    + '\nTo re-install `' + pkg_name + '` run:' \
-                    + '\n\t`apt-vim update ' + git_url + '`', ASSUME_YES=self.ASSUME_YES)
+        if pkg_name in [p[NAME] for p in self.VIM_CONFIG[PKGS]]:
+            report_fail('Skipping installed package `' + pkg_name + '`'
+                        + '\nTo re-install `' + pkg_name + '` run:'
+                        + '\n\t`apt-vim update ' + git_url + '`', ASSUME_YES=self.ASSUME_YES)
             return True
         return False
 
@@ -232,9 +260,9 @@ class aptvim(object):
             # User denied post-clone installation recipe
             # Rollback the cloned content
             self.remove_pkg(vimpkg)
-        elif install_result == False:
+        elif install_result is False:
             report_fail('Failed to install ' + vimpkg.name,
-                    ASSUME_YES=self.ASSUME_YES)
+                        ASSUME_YES=self.ASSUME_YES)
         # Change back to the DIR containing this script
         os.chdir(SCRIPT_ROOT_DIR)
 
@@ -244,7 +272,8 @@ class aptvim(object):
             return vimpkg.name
         if self.ASSUME_YES:
             return self.get_pkg_name_from_url(git_url)
-        pkg_name = input('Enter a name for package `' + git_url + '` (<ENTER> for automatic naming):  ')
+        pkg_name = input('Enter a name for package `' +
+                         git_url + '` (<ENTER> for automatic naming):  ')
         if not pkg_name:
             pkg_name = self.get_pkg_name_from_url(git_url)
         return pkg_name
@@ -252,8 +281,8 @@ class aptvim(object):
     def add_new_pkg(self, pkg_name, git_url, skipInstalledCheck=False):
         if not pkg_name:
             report_fail('Each package must have a non-blank name.',
-                    confirm_continue=False,
-                    ASSUME_YES=self.ASSUME_YES)
+                        confirm_continue=False,
+                        ASSUME_YES=self.ASSUME_YES)
         elif not skipInstalledCheck and self.isInstalled(pkg_name, git_url):
             return None
         vimpkg = VimPackage(pkg_url=git_url, ASSUME_YES=self.ASSUME_YES)
@@ -276,13 +305,14 @@ class aptvim(object):
             if not pkg_name:
                 pkg_name = self.get_pkg_name_from_url(git_url)
             if os.path.exists(os.path.join(self.INSTALL_TARGET, pkg_name)):
-                report_fail('Skipping installed package `' + pkg_name + '`' \
-                            + '\nTo re-install `' + pkg_name + '` run:' \
+                report_fail('Skipping installed package `' + pkg_name + '`'
+                            + '\nTo re-install `' + pkg_name + '` run:'
                             + '\n\t`apt-vim update ' + git_url + '`',
                             ASSUME_YES=self.ASSUME_YES)
                 return
             if pkg_name and not self.call_silent(['git', 'clone', git_url, pkg_name]):
-                report_fail('Failed to clone `' + pkg_name + '`', ASSUME_YES=self.ASSUME_YES)
+                report_fail('Failed to clone `' + pkg_name +
+                            '`', ASSUME_YES=self.ASSUME_YES)
         if pkg_name and not os.path.exists(pkg_name):
             os.makedirs(pkg_name)
         if os.path.exists(pkg_name):
@@ -321,11 +351,13 @@ class aptvim(object):
             for dep in dependencies:
                 if not self.check_requirements([dep.name]):
                     commands = dep.get_recipe(ASSUME_YES=self.ASSUME_YES)
-                    install_result = self.exe_shell_commands(commands, dep.name)
+                    install_result = self.exe_shell_commands(
+                        commands, dep.name)
                     if install_result is None:
                         return None
-                    if not self.exe_shell_commands(commands, dep.name):
-                        report_fail('Failed to intall ' + pkg_name, ASSUME_YES=self.ASSUME_YES)
+                    if install_result is False:
+                        report_fail('Failed to intall ' + pkg_name,
+                                    ASSUME_YES=self.ASSUME_YES)
                         return False
                     else:
                         exe = self.find_executable(SRC_DIR, dep.name)
@@ -348,11 +380,10 @@ class aptvim(object):
                         return os.path.abspath(f)
         return None
 
-
-
     def print_packages(self):
         installed = sorted(self.get_installed_pkgs(), key=lambda s: s.lower())
-        available = [ [p[NAME], p[PKG_URL]] for p in self.VIM_CONFIG[PKGS] if p[NAME] not in installed ]
+        available = [[p[NAME], p[PKG_URL]]
+                     for p in self.VIM_CONFIG[PKGS] if p[NAME] not in installed]
         print('Installed packages: ')
         for pkg in installed:
             print('\t' + pkg)
@@ -363,9 +394,9 @@ class aptvim(object):
         print('\n')
 
     def add_overwrite(self, pkg_name, git_url):
-        if user_confirm('Package `' + pkg_name + \
-                '` already exists. Do you wish to overwrite?',
-                ASSUME_YES=self.ASSUME_YES):
+        if user_confirm('Package `' + pkg_name +
+                        '` already exists. Do you wish to overwrite?',
+                        ASSUME_YES=self.ASSUME_YES):
             vimpkg = self.get_vimpkg(git_url)
             # Delete plugin and its dependencies/src
             self.remove_pkg(vimpkg)
@@ -388,21 +419,21 @@ class aptvim(object):
         if os.path.exists(BIN_DIR):
             bins = os.listdir(BIN_DIR)
             for pkg in self.VIM_CONFIG[PKGS]:
-                newpkg = VimPackage.dict_to_vimpkg(pkg, ASSUME_YES=self.ASSUME_YES)
+                newpkg = VimPackage.dict_to_vimpkg(
+                    pkg, ASSUME_YES=self.ASSUME_YES)
                 for dep in vimpkg.depends_on:
                     if dep.name in bins and  \
-                            dep.name not in [ d.name for d in newpkg.depends_on ] \
+                            dep.name not in [d.name for d in newpkg.depends_on] \
                             and os.path.exists(os.path.join(BIN_DIR, dep.name)):
                         os.remove(os.path.join(BIN_DIR, dep.name))
                         print('Removed binary `' + dep.name + '`')
-
 
     def remove_pkg_src(self, vimpkg):
         dir = os.path.join(SRC_DIR, vimpkg.name)
         self.remove_dir(dir)
 
     def remove_pkg_ref(self, vimpkg):
-        return [ p for p in self.VIM_CONFIG[PKGS] if vimpkg.name not in p[NAME] ]
+        return [p for p in self.VIM_CONFIG[PKGS] if vimpkg.name not in p[NAME]]
 
     def remove_pkg_plugin(self, vimpkg):
         dir = os.path.join(self.INSTALL_TARGET, vimpkg.name)
@@ -410,16 +441,17 @@ class aptvim(object):
 
     def get_depend(self, pkg_name='this plugin'):
         if self.ASSUME_YES:
-            return [];
+            return []
         depends = []
         if user_confirm('Does ' + pkg_name + ' have any Dependencies?', ASSUME_YES=self.ASSUME_YES):
-            print('\nEnter dependencies one at a time. You will be prompted' + \
-                    '\nto enter an installation recipe for each dependency.' + \
-                    '\nTerminate dependency list with an empty line.')
-            i = 1;
+            print('\nEnter dependencies one at a time. You will be prompted' +
+                  '\nto enter an installation recipe for each dependency.' +
+                  '\nTerminate dependency list with an empty line.')
+            i = 1
             dep_name = input('Name for dependency ' + str(i) + ':  ')
             while dep_name != "":
-                depends.append(self.__get_depend(dep_name))
+                dependency = self.__get_depend(dep_name)
+                depends.append(dependency)
                 i += 1
                 dep_name = input('Name for dependency ' + str(i) + ':  ')
         return depends
@@ -442,8 +474,8 @@ class aptvim(object):
 
     def __get_recipe(self):
         commands = []
-        print('\nEnter commands one line at a time. ' + \
-                'Terminate commands with an empty line.')
+        print('\nEnter commands one line at a time. ' +
+              'Terminate commands with an empty line.')
         i = 1
         command = input('Command ' + str(i) + ': ')
         while command != "":
@@ -463,9 +495,11 @@ class aptvim(object):
                 self.VIM_CONFIG[PKGS].append(vimpkg.to_dict())
             data[PKGS] = self.VIM_CONFIG[PKGS]
             with open(file_path, 'w') as f:
-                json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
+                json.dump(data, f, sort_keys=True,
+                          indent=4, separators=(',', ': '))
         except:
-            report_fail('Failed to write ' + file_path, confirm_continue=False, ASSUME_YES=self.ASSUME_YES)
+            report_fail('Failed to write ' + file_path,
+                        confirm_continue=False, ASSUME_YES=self.ASSUME_YES)
 
     def get_pkg_name_from_url(self, git_url):
         pkg_regex = re.compile(r'.*\/([^\/]+).git$')
@@ -474,7 +508,7 @@ class aptvim(object):
             return match.group(1)
         # Exit execution, no name can be determined from the URL
         report_fail('Invalid git URL (should end with ".git"): ' + git_url, confirm_continue=False,
-                ASSUME_YES=self.ASSUME_YES)
+                    ASSUME_YES=self.ASSUME_YES)
 
     def check_requirements(self, requirements=None):
         if requirements is None:
@@ -486,12 +520,13 @@ class aptvim(object):
 
     def valid_url(self, url):
         regex = re.compile(
-                r'^(?:http|ftp)s?://' # http:// or https:// or ftp:// or ftps://
-                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
-                r'localhost|' #localhost...
-                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-                r'(?::\d+)?' # optional port
-                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+            r'^(?:http|ftp)s?://'  # http:// or https:// or ftp:// or ftps://
+            # domain...
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
+            r'localhost|'  # localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+            r'(?::\d+)?'  # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         match = regex.search(url)
         return True if match else False
 
@@ -520,7 +555,8 @@ class aptvim(object):
                 else:
                     call(shlex.split(com))
             except:
-                user_response = report_fail('Command `' + com + '` failed.', ASSUME_YES=self.ASSUME_YES)
+                user_response = report_fail(
+                    'Command `' + com + '` failed.', ASSUME_YES=self.ASSUME_YES)
                 return user_response
         return True
 
@@ -539,7 +575,8 @@ class aptvim(object):
                 os.chdir(pkg_name)
                 self.ASSUME_YES = True
                 git_url = check_output(git_origin).strip()
-                vimpkg = self.add_new_pkg(pkg_name, git_url, skipInstalledCheck=True)
+                vimpkg = self.add_new_pkg(
+                    pkg_name, git_url, skipInstalledCheck=True)
                 self.save_vim_config(vimpkg)
             except:
                 continue
@@ -549,8 +586,8 @@ class aptvim(object):
 
     def first_run(self):
         if os.path.exists(SCRIPT_ROOT_DIR):
-            report_fail("There's already an apt-vim root directory at " + \
-                       SCRIPT_ROOT_DIR + "\n",
+            report_fail("There's already an apt-vim root directory at " +
+                        SCRIPT_ROOT_DIR + "\n",
                         "Are you sure you want to continue?",
                         ASSUME_YES=False)
         if os.path.exists(VIM_ROOT_DIR):
@@ -585,22 +622,21 @@ class aptvim(object):
         if not os.path.exists(SRC_DIR):
             os.makedirs(SRC_DIR)
 
-
         if not self.call_silent(['cp', os.path.realpath(__file__), SCRIPT_EXE_PATH]):
-            report_fail('Failed to copy `apt-vim` to `PATH`\n' + \
-                'Please ensure that `apt-vim` is in your PATH',
-                confirm_continue=False,
-                ASSUME_YES=self.ASSUME_YES)
+            report_fail('Failed to copy `apt-vim` to `PATH`\n' +
+                        'Please ensure that `apt-vim` is in your PATH',
+                        confirm_continue=False,
+                        ASSUME_YES=self.ASSUME_YES)
 
         self.port_vim_plugins()
 
         for path in [SCRIPT_ROOT_DIR,
-                VIM_ROOT_DIR,
-                BUNDLE_PATH,
-                SRC_DIR,
-                BIN_DIR,
-                VIM_CONFIG_PATH,
-                SCRIPT_EXE_PATH]:
+                     VIM_ROOT_DIR,
+                     BUNDLE_PATH,
+                     SRC_DIR,
+                     BIN_DIR,
+                     VIM_CONFIG_PATH,
+                     SCRIPT_EXE_PATH]:
             self.fix_ownership(path)
 
         os.chmod(SCRIPT_EXE_PATH, 0o744)
@@ -608,11 +644,11 @@ class aptvim(object):
         os.environ['PATH'] += os.pathsep + BIN_DIR
         missing_dependencies = self.dep_check()
         if missing_dependencies:
-            report_fail('Cannot proceed. Missing the following dependencies that could' \
-                    + ' not be automatically insatlled:\n' \
-                    + str(missing_dependencies),
-                    confirm_continue=False,
-                    ASSUME_YES=self.ASSUME_YES)
+            report_fail('Cannot proceed. Missing the following dependencies that could'
+                        + ' not be automatically insatlled:\n'
+                        + str(missing_dependencies),
+                        confirm_continue=False,
+                        ASSUME_YES=self.ASSUME_YES)
 
         print('Completed setup successfully')
 
@@ -621,7 +657,8 @@ class aptvim(object):
             msg = 'FAILED!\n' + os.path.abspath(BIN_DIR) + ' not found in PATH' + \
                 '\n\nPlease ensure that ' + os.path.abspath(BIN_DIR) + \
                 ' is in your PATH'
-            report_fail(msg, confirm_continue=False, ASSUME_YES=self.ASSUME_YES)
+            report_fail(msg, confirm_continue=False,
+                        ASSUME_YES=self.ASSUME_YES)
 
     def confirm_install_ok(self, install_requester, commands):
         if self.ASSUME_YES:
@@ -631,8 +668,8 @@ class aptvim(object):
             prompt_command_string += 's'
 
         confirm_string = 'Package `' + install_requester + \
-                '` wants to run the following ' + prompt_command_string + \
-                ' from the directory "' + os.getcwd() + '"\n'
+            '` wants to run the following ' + prompt_command_string + \
+            ' from the directory "' + os.getcwd() + '"\n'
         command_string = ''
         for command in commands:
             command_string += '    ' + command + '\n'
@@ -677,15 +714,16 @@ class aptvim(object):
         except:
             print('Parse error. Please enter a valid JSON.')
             sys.exit(1)
-        vimpkg = VimPackage.dict_to_vimpkg(input_dict, ASSUME_YES=self.ASSUME_YES)
+        vimpkg = VimPackage.dict_to_vimpkg(
+            input_dict, ASSUME_YES=self.ASSUME_YES)
         return vimpkg
 
     def check_unique_pkg_name(self, pkg_name):
-        if pkg_name in [ p[NAME] for p in self.VIM_CONFIG[PKGS] ]:
+        if pkg_name in [p[NAME] for p in self.VIM_CONFIG[PKGS]]:
             report_fail('FAILED!\nEach package must have a unique name. ' +
-                    'A package with name `' + pkg_name + '` already exists.',
-                    confirm_continue=False,
-                    ASSUME_YES=self.ASSUME_YES)
+                        'A package with name `' + pkg_name + '` already exists.',
+                        confirm_continue=False,
+                        ASSUME_YES=self.ASSUME_YES)
 
     def handle_install(self, argv, options, pkg_ids):
         if self.JSON_INPUT:
@@ -694,10 +732,11 @@ class aptvim(object):
             self.install_pkg(vimpkg)
         elif not pkg_ids:
             # No options and no git URL passed
-            pkgs = [ p for p in self.VIM_CONFIG[PKGS] if  \
-                    p[NAME] not in self.get_installed_pkgs() ]
+            pkgs = [p for p in self.VIM_CONFIG[PKGS] if
+                    p[NAME] not in self.get_installed_pkgs()]
             for pkg in pkgs:
-                vimpkg = VimPackage.dict_to_vimpkg(pkg, ASSUME_YES=self.ASSUME_YES)
+                vimpkg = VimPackage.dict_to_vimpkg(
+                    pkg, ASSUME_YES=self.ASSUME_YES)
                 if self.ASSUME_YES or user_confirm('Install `' + vimpkg.name + '`?', ASSUME_YES=self.ASSUME_YES):
                     self.install_pkg(vimpkg)
         else:
@@ -714,7 +753,8 @@ class aptvim(object):
                     pkg = self.get_pkg_from_local_json()
                     if pkg:
                         # Local recipe provided, use it
-                        vimpkg = VimPackage.dict_to_vimpkg(pkg, ASSUME_YES=self.ASSUME_YES)
+                        vimpkg = VimPackage.dict_to_vimpkg(
+                            pkg, ASSUME_YES=self.ASSUME_YES)
                         self.rename_pkg(pkg_name, vimpkg.name)
                     else:
                         # No local recipe, prompt user for one
@@ -732,7 +772,7 @@ class aptvim(object):
             for git_url in pkg_ids:
                 pkg_name = self.get_pkg_name(git_url)
                 self.check_unique_pkg_name(pkg_name)
-                if git_url in [ p[PKG_URL] for p in self.VIM_CONFIG[PKGS] ]:
+                if git_url in [p[PKG_URL] for p in self.VIM_CONFIG[PKGS]]:
                     if not self.add_overwrite(pkg_name, git_url):
                         continue
                 vimpkg = self.add_new_pkg(pkg_name, git_url)
@@ -741,11 +781,12 @@ class aptvim(object):
     def __handle_remove(self, argv, options, pkg_ids, delete=False):
         if not pkg_ids:
             report_fail('No package URL specified. Exiting', confirm_continue=False,
-                    ASSUME_YES=self.ASSUME_YES)
+                        ASSUME_YES=self.ASSUME_YES)
         for git_url in pkg_ids:
             vimpkg = self.get_vimpkg(git_url)
             if not vimpkg:
-                report_fail('No package with ID `' + git_url + '`', ASSUME_YES=self.ASSUME_YES)
+                report_fail('No package with ID `' + git_url +
+                            '`', ASSUME_YES=self.ASSUME_YES)
                 continue
             pkg_name = vimpkg.name
             msg = 'Confirm remove package `' + pkg_name + '`'
@@ -756,7 +797,7 @@ class aptvim(object):
                     self.save_vim_config()
                 print('Successfully removed package `' + pkg_name + '`')
             else:
-                print('Skipped removal of `' + pkg_name +'`')
+                print('Skipped removal of `' + pkg_name + '`')
 
     # Remove a package from the plugins dir, but KEEP the recipe
     def handle_remove(self, argv, options, pkg_ids):
@@ -769,11 +810,11 @@ class aptvim(object):
     def handle_update(self, argv, options, pkg_ids):
         if not pkg_ids:  # If no urls provided, assume updating all INSTALLED packages in vim_config
             installed_packages = self.get_installed_pkgs()
-            pkg_ids = [ p[PKG_URL] for p in self.VIM_CONFIG[PKGS] if \
-                    p[NAME] in installed_packages ]
+            pkg_ids = [p[PKG_URL] for p in self.VIM_CONFIG[PKGS] if
+                       p[NAME] in installed_packages]
             if not pkg_ids:
                 report_fail('No package URL specified. Exiting', confirm_continue=False,
-                        ASSUME_YES=self.ASSUME_YES)
+                            ASSUME_YES=self.ASSUME_YES)
         for git_url in pkg_ids:
             vimpkg = self.get_vimpkg(git_url)
             if vimpkg:
@@ -784,7 +825,7 @@ class aptvim(object):
                     self.install_pkg(vimpkg)
                     print('Successfully updated package `' + pkg_name + '`')
                 else:
-                    print('Skipped updating package `' + pkg_name +'`')
+                    print('Skipped updating package `' + pkg_name + '`')
             else:
                 print('Package not installed: ' + git_url)
                 if user_confirm('Would you like to install it?', ASSUME_YES=self.ASSUME_YES):
@@ -792,9 +833,7 @@ class aptvim(object):
                         self.handle_install(None, None, [git_url])
                     else:
                         report_fail('`' + git_url + '` is not a valid URL. Skipping install.',
-                                ASSUME_YES=self.ASSUME_YES)
-
-
+                                    ASSUME_YES=self.ASSUME_YES)
 
     def process_cmd_args(self):
         argv = sys.argv[1:]
@@ -813,14 +852,15 @@ class aptvim(object):
                 self.MODES[mode]()
                 sys.exit(0)
             if missing_dependencies:
-                report_fail('Cannot proceed. Missing the following dependencies that could' \
-                        + ' not be automatically insatlled:\n' \
-                        + str(missing_dependencies),
-                        confirm_continue=False,
-                        ASSUME_YES=self.ASSUME_YES)
+                report_fail('Cannot proceed. Missing the following dependencies that could'
+                            + ' not be automatically insatlled:\n'
+                            + str(missing_dependencies),
+                            confirm_continue=False,
+                            ASSUME_YES=self.ASSUME_YES)
 
-            options, remainder = getopt.getopt(argv[1:], 'yj', ['assume-yes', 'json'])
-            for opt,arg in options:
+            options, remainder = getopt.getopt(
+                argv[1:], 'yj', ['assume-yes', 'json'])
+            for opt, arg in options:
                 if opt in ('-y', '--assume-yes'):
                     self.ASSUME_YES = True
                 if opt in ('-j', '--json'):
@@ -828,13 +868,13 @@ class aptvim(object):
             self.MODES[mode](argv[1:], options, remainder)
 
     def usage(self):
-        print('Valid modes: ' + str(sorted(list(self.MODES.keys()), key=lambda s: s.lower())) + '\n')
+        print('Valid modes: ' + str(sorted(list(self.MODES.keys()),
+                                           key=lambda s: s.lower())) + '\n')
         sys.exit(1)
 
     def main(self):
         self.process_cmd_args()
         print('Completed successfully.')
-
 
 
 signal.signal(signal.SIGINT, sigint_handler)
@@ -851,11 +891,10 @@ if __name__ != '__main__':
 if __name__ == '__main__':
     # Bind input to raw_input for py2/py3 compatibility
     try:
-       input = raw_input
+        input = raw_input
     except NameError:
-       pass
+        pass
 
     apt_vim = aptvim()
     apt_vim.main()
     sys.exit(0)
-
