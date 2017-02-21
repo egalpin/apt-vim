@@ -106,8 +106,10 @@ class PkgItem(object):
 
 class Dependency(PkgItem):
 
-    def __init__(self, name='dep', recipe={}, ASSUME_YES=False):
+    def __init__(self, name='dep', recipe=None, ASSUME_YES=False):
         self.name = name
+        if recipe is None:
+            recipe = {}
         self.recipe = recipe
 
     def to_dict(self):
@@ -121,10 +123,14 @@ class Dependency(PkgItem):
 
 class VimPackage(PkgItem):
 
-    def __init__(self, pkg_url='', name='', depends_on=[], recipe={}, ASSUME_YES=False):
+    def __init__(self, pkg_url='', name='', depends_on=None, recipe=None, ASSUME_YES=False):
         self.pkg_url = pkg_url
         self.name = name
+        if depends_on is None:
+            depends_on = []
         self.depends_on = depends_on
+        if recipe is None:
+            recipe = {}
         self.recipe = recipe
 
     def to_dict(self):
@@ -349,7 +355,7 @@ class aptvim(object):
                         commands, dep.name)
                     if install_result is None:
                         return None
-                    if not self.exe_shell_commands(commands, dep.name):
+                    if install_result is False:
                         report_fail('Failed to intall ' + pkg_name,
                                     ASSUME_YES=self.ASSUME_YES)
                         return False
@@ -444,7 +450,8 @@ class aptvim(object):
             i = 1
             dep_name = input('Name for dependency ' + str(i) + ':  ')
             while dep_name != "":
-                depends.append(self.__get_depend(dep_name))
+                dependency = self.__get_depend(dep_name)
+                depends.append(dependency)
                 i += 1
                 dep_name = input('Name for dependency ' + str(i) + ':  ')
         return depends
