@@ -67,7 +67,7 @@ The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins
 
     apt-vim init
 
-This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should be run after cloning, and only needs to be run once.
+This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should only be run as part of the manual installation process, and only needs to be run once.
 
 ####install
 
@@ -119,7 +119,7 @@ Allows you to add a plugin and its configuration to your `vim_config.json` file,
 
 URLs (required):  URLs of Git repositories separated by whitespace
 
-Removes a plugin and all of its dependencies, but KEEPS the installation recipe. In doing so, your system will not become cluttered with outdated files on which no plugins depend. A dependency (Ex. `ctags`) is __ONLY__ removed if no other plugins in your configuration have the same dependency.
+Removes a plugin and all of its dependencies, but KEEPS the installation recipe. A dependency (Ex. `ctags`) is __ONLY__ removed if no other plugins in your configuration have the same dependency. This feature can be helpful if trying a few similar plugins to compare features. A plugin's installation recipe can be later `deleted` if desired.
 
 ####delete
 
@@ -127,7 +127,7 @@ Removes a plugin and all of its dependencies, but KEEPS the installation recipe.
 
 URLs (required):  URLs of Git repositories separated by whitespace
 
-The same as `remove`, but also REMOVES the installation recipe.
+The same as `remove`, but also DELETES the installation recipe from your `vim_config.json`.
 
 ####update
 
