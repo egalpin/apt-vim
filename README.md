@@ -123,7 +123,7 @@ Removes a plugin and all of its dependencies, but KEEPS the installation recipe.
 
 ####delete
 
-    apt-vim remove [options] URLs
+    apt-vim delete [options] URLs
 
 URLs (required):  URLs of Git repositories separated by whitespace
 
