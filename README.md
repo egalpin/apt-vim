@@ -12,7 +12,7 @@ Yet another Plugin Manager for Vim
   - [Delete](#delete)
   - [Update](#update)
 
-#Summary
+# Summary
 `apt-vim` aims to serve as a fully-automated, __cross-platform__ plugin management tool for Vim __including dependency installation__, using [Pathogen](https://github.com/tpope/vim-pathogen) at its core to load plugins. Plugins and their dependencies can be installed, removed, and updated using this one tool.
 
 Plugin installation recipes can be saved and shared, allowing users to create portable configuration files ([here's one](https://github.com/egalpin/vim_settings/blob/master/vim_config.json)), and allowing plugin developers to create an automated installation process for their users. Installation recipes can be made cross-platform by setting recipes for `linux`, `darwin` (Mac), or `windows` (cygwin). Recipes you create will be saved under your current platform automatically.
@@ -21,18 +21,18 @@ For an example plugin recipe, see [tern_for_vim][tern_for_vim].  If you'd like t
 
 __Note:__ `apt-vim` is under active development. Please report any issues, questions, or suggestions, however minor you feel they may be, by opening an [issue][issues]. Please also open a new [issue][issues] to create a feature request. Adding tags and thorough descriptions will be of great help!
 
-#Installation
+# Installation
 _Don't worry:_
  - Before starting setup, a backup of the `bundle` directory is created at `~/.vim/bundle.bak`.
  - Any plugins you already have in `~/.vim/bundle` will persist. If an existing plugin was cloned with `git`, the plugin will automatically be tracked with `apt-vim`.
  - Your `.vim` directory will not be altered aside from `bundle` (which is backed up automatically before installation), which will be soft-linked to `~/.vimpkg/bundle`.
 
-##Option 1 - Automatic
+## Option 1 - Automatic
 
     curl -sL https://raw.githubusercontent.com/egalpin/apt-vim/master/install.sh | sh
 _Note: you may need to close and reopen your terminal_
 
-##Option 2 - Manual
+## Option 2 - Manual
 1. Install Vim
 2. Install Git
 3. Install python 2.7.x or python 3
@@ -57,19 +57,19 @@ _Note: you may need to close and reopen your terminal_
   - [Tagbar](https://github.com/majutsushi/tagbar) is an optional example which you can deny if desired
 
 
-#Usage
+# Usage
 In general:  `apt-vim <mode> [options] [URLs]` where mode is one of :  __[init](#init), [install](#install), [list](#list), [add](#add), [remove](#remove), [delete](#delete), [update](#update)__
 
 The file `~/.vimpkg/vim_config.json` is used to store configurations for plugins that you use. For a simple example, take a look at [vim_config.json](vim_config.json) in this repo. For an advanced example, look  [here](https://github.com/egalpin/vim_settings/blob/master/vim_config.json).
 
 
-####init
+#### init
 
     apt-vim init
 
 This command sets up vital files and settings to allow `apt-vim` to do its thing. This command should only be run as part of the manual installation process, and only needs to be run once.
 
-####install
+#### install
 
     apt-vim install [options] [URLs]
 
@@ -80,7 +80,7 @@ Allows you to add a plugin and its configuration to your `vim_config.json` file,
 Most plugins--those without dependencies--can simply be installed with `apt-vim install -y <git-url>`.  Other plugins, such as [tern_for_vim][tern_install] and [this fork of YouCompleteMe][egalpin_YouCompleteMe] have `apt-vim` recipes built-in.  These plugins, along with their dependencies, can be installed with a simple `apt-vim install -y <git-url>`.
 
 
-#####For other plugins with dependencies:
+##### For other plugins with dependencies:
 
 There are a number of cases to consider when installing a plugin, as an installation recipe can come from many places:
 
@@ -97,7 +97,7 @@ If no URLs are provided, you will be walked through installing any plugins in `v
 
 Using the `--json` option allows you to install a plugin and specify its configuration. This is useful for installing a new plugin to your Vim setup that someone has created a configuration for. See [above](#options) for an example.
 
-####list
+#### list
 
     apt-vim list
 
@@ -105,7 +105,7 @@ Displays a list of packages you have _actually_ installed, and a list of package
 
 __Note__: This is not an exhaustive list of all of the plugins that can be installed using `apt-vim`. Any plugin on GitHub (or other Git repository that you have access to) can be installed using `apt-vim` by supplying the corresponding URL.
 
-####add
+#### add
 
     apt-vim add [options] URLs
 
@@ -113,7 +113,7 @@ URLs (required):  URLs of Git repositories separated by whitespace. At least one
 
 Allows you to add a plugin and its configuration to your `vim_config.json` file, _without_ installing. This command mode is useful when creating a portable `vim_config.json` while not wanting to change your own system's settings. 
 
-####remove
+#### remove
 
     apt-vim remove [options] URLs
 
@@ -121,7 +121,7 @@ URLs (required):  URLs of Git repositories separated by whitespace
 
 Removes a plugin and all of its dependencies, but KEEPS the installation recipe. A dependency (Ex. `ctags`) is __ONLY__ removed if no other plugins in your configuration have the same dependency. This feature can be helpful if trying a few similar plugins to compare features. A plugin's installation recipe can be later `deleted` if desired.
 
-####delete
+#### delete
 
     apt-vim delete [options] URLs
 
@@ -129,7 +129,7 @@ URLs (required):  URLs of Git repositories separated by whitespace
 
 The same as `remove`, but also DELETES the installation recipe from your `vim_config.json`.
 
-####update
+#### update
 
     apt-vim update [options] [URLs]
 
@@ -137,7 +137,7 @@ URLs:  URLs of Git repositories separated by whitespace
 
 Update first removes a plugin's files (but _not_ its configuration), then re-clones and re-executes the configuration for that plugin.
 
-####Options
+#### Options
   - -y, --assume-yes
   - -j, --json
 
@@ -178,7 +178,7 @@ apt-vim install -jy
 }
 ```
 
-#Next Steps
+# Next Steps
 - `pip` installer
 - `brew` installer
 - Improved cross-platform support via increased number of install targets
