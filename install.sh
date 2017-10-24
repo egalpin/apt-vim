@@ -67,7 +67,7 @@ elif [ "$added_to_profile" = false ] && [ "$already_present" = false ]; then
     echo "== Error:"
     echo "   Found no profile to add apt-vim PATH to."
     echo "   Add the following line to your shell profile and source it to install manually:"
-    printf "   $exec_string\n"
+    printf "   $bin_string\n"
 else
     echo "== apt-vim installation succeeded! Run 'source ~/.bashrc || source ~/.bash_profile' or 'source ~/.zshrc'"
     echo "   to access the executable script."
