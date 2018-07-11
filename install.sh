@@ -1,7 +1,7 @@
 #! /usr/bin/env sh
 
 start_dir=$(pwd)
-bin_string="export PATH=${PATH}:${HOME}/.vimpkg/bin"
+bin_string="export PATH=\"${PATH}:${HOME}/.vimpkg/bin\""
 
 # Download the apt-vim files
 curl -fSsLo ${HOME}/apt-vim/apt-vim --create-dirs \
