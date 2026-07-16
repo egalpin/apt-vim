@@ -1,3 +1,6 @@
+def _strtobool(val):
+    return val.lower() in ("true", "1", "yes", "y", "t")
+
 #!/usr/bin/env python
 import json
 import sys
@@ -10,7 +13,6 @@ import platform
 import stat
 import ast
 import signal
-from distutils.util import strtobool
 from subprocess import call, check_output, CalledProcessError
 
 HOME = os.path.expanduser("~")
@@ -79,10 +81,10 @@ def user_confirm(msg=None, ASSUME_YES=False):
     while num_tries < 3:
         user_choice = input(msg).strip().lower()
         try:
-            if strtobool(user_choice):
+            if _strtobool(user_choice):
                 return True
             return False
-        except:  # Invalid option, retry
+        except Exception:  # Invalid option, retry
             print('Invalid option. Please enter `Y` or `N` only')
             num_tries += 1
     sys.exit(1)
@@ -226,7 +228,7 @@ class aptvim(object):
             try:
                 pkg = ast.literal_eval(json)
                 return pkg
-            except:
+            except Exception:
                 print('Parse error. Please enter a valid JSON.')
                 sys.exit(1)
 
@@ -497,7 +499,7 @@ class aptvim(object):
             with open(file_path, 'w') as f:
                 json.dump(data, f, sort_keys=True,
                           indent=4, separators=(',', ': '))
-        except:
+        except Exception:
             report_fail('Failed to write ' + file_path,
                         confirm_continue=False, ASSUME_YES=self.ASSUME_YES)
 
@@ -554,7 +556,7 @@ class aptvim(object):
                     os.chdir(shlex.split(com)[1])
                 else:
                     call(shlex.split(com))
-            except:
+            except Exception:
                 user_response = report_fail(
                     'Command `' + com + '` failed.', ASSUME_YES=self.ASSUME_YES)
                 return user_response
@@ -578,7 +580,7 @@ class aptvim(object):
                 vimpkg = self.add_new_pkg(
                     pkg_name, git_url, skipInstalledCheck=True)
                 self.save_vim_config(vimpkg)
-            except:
+            except Exception:
                 continue
             finally:
                 self.ASSUME_YES = False
@@ -711,7 +713,7 @@ class aptvim(object):
             line = input().strip()
         try:
             input_dict = ast.literal_eval(input_str)
-        except:
+        except Exception:
             print('Parse error. Please enter a valid JSON.')
             sys.exit(1)
         vimpkg = VimPackage.dict_to_vimpkg(
