@@ -1,3 +1,7 @@
+> ## Notice: Repo Unmaintained
+> This repo is no longer actively maintained, and hasn't been for many years. It's recommended to use a different vim package management tool like [vim-plug](https://github.com/junegunn/vim-plug), or many other great choices.
+
+  
 # apt-vim
 Yet another Plugin Manager for Vim
 
